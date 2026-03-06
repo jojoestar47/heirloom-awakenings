@@ -12,7 +12,6 @@
   --bg:         #07060a;
   --stone:      #0e0c11;
   --stone2:     #141118;
-  --stone3:     #1c1820;
   --crack:      #2a2230;
   --crack-lit:  #3d3050;
   --text:       #d0c4b8;
@@ -33,7 +32,9 @@
   --t2: #e8902a;
   --t3: #f5c842;
   --t4: #e8e0f8;
+  --max-w: 860px;
 }
+
 html, body { height: 100%; overflow: hidden; }
 body {
   background: var(--bg); color: var(--text);
@@ -51,20 +52,31 @@ body::before {
   pointer-events: none; z-index: 0;
 }
 
+/* ── MAX WIDTH WRAPPER ── */
+.mw {
+  width: 100%;
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
 /* ── HEADER ── */
 header {
-  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 18px 10px; border-bottom: 1px solid var(--crack);
-  position: relative; z-index: 10; background: var(--stone);
+  flex-shrink: 0; position: relative; z-index: 10;
+  background: var(--stone); border-bottom: 1px solid var(--crack);
 }
 header::after {
   content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent 0%, var(--ember-dim) 30%, var(--flame-dim) 50%, var(--ember-dim) 70%, transparent 100%);
 }
+.header-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px 10px;
+}
 .logo-eyebrow { font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: 5px; text-transform: uppercase; color: var(--ember-dim); margin-bottom: 1px; }
-.logo { font-family: 'Cinzel Decorative', serif; font-size: 12px; color: var(--sacred); text-shadow: 0 0 20px rgba(245,200,66,0.25); }
-.header-right { display: flex; align-items: center; gap: 8px; }
-.header-char  { font-family: 'Cinzel', serif; font-size: 10px; color: var(--ember); letter-spacing: 1px; display: none; }
+.logo { font-family: 'Cinzel Decorative', serif; font-size: 13px; color: var(--sacred); text-shadow: 0 0 20px rgba(245,200,66,0.25); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.header-char  { font-family: 'Cinzel', serif; font-size: 11px; color: var(--ember); letter-spacing: 1px; display: none; }
 .header-level { font-family: 'Cinzel', serif; font-size: 9px; color: var(--text-dim); letter-spacing: 2px; display: none; }
 
 /* ── SCROLL ── */
@@ -73,144 +85,137 @@ header::after {
 .scroll-area::-webkit-scrollbar-track { background: var(--stone); }
 .scroll-area::-webkit-scrollbar-thumb { background: var(--crack-lit); }
 
-/* ── STATES ── */
+/* ── LOADING / ERROR ── */
 #loading { display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; gap: 14px; }
-.loading-glyph { font-family: 'Cinzel Decorative', serif; font-size: 28px; color: var(--ember-dim); animation: breathe 1.5s ease-in-out infinite; }
+.loading-glyph { font-family: 'Cinzel Decorative', serif; font-size: 32px; color: var(--ember-dim); animation: breathe 1.5s ease-in-out infinite; }
 .loading-text  { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 5px; text-transform: uppercase; color: var(--text-faint); animation: breathe 1.5s ease-in-out infinite; }
-
-@keyframes breathe    { 0%,100%{opacity:.3} 50%{opacity:1} }
-@keyframes card-glow  { 0%,100%{border-color:var(--ember-dim);box-shadow:0 0 0 transparent} 50%{border-color:var(--ember);box-shadow:0 0 18px rgba(232,144,42,.15)} }
-@keyframes badge-pulse{ 0%,100%{opacity:.6} 50%{opacity:1} }
-@keyframes anim-r     { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
-@keyframes anim-l     { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
-.anim-r { animation: anim-r .18s ease; }
-.anim-l { animation: anim-l .18s ease; }
-
-#config-notice { display:none; margin:16px; padding:16px; background:rgba(180,80,10,.08); border:1px solid var(--ember-dim); font-size:13px; line-height:1.6; color:var(--text-dim); }
+#config-notice { display:none; max-width:var(--max-w); margin:20px auto; padding:18px; background:rgba(180,80,10,.08); border:1px solid var(--ember-dim); font-size:13px; line-height:1.6; color:var(--text-dim); }
 #config-notice strong { font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--ember); display:block; margin-bottom:8px; }
-#config-notice code { background:var(--stone2); padding:2px 6px; color:var(--flame); font-size:12px; }
-#error-msg { display:none; padding:32px 20px; text-align:center; font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px; color:var(--red); }
+#config-notice code { background:var(--stone2); padding:2px 6px; color:var(--flame); }
+#error-msg { display:none; padding:40px 20px; text-align:center; font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px; color:var(--red); }
 
-/* ══════════════════════
+/* ── ANIMATIONS ── */
+@keyframes breathe    { 0%,100%{opacity:.3} 50%{opacity:1} }
+@keyframes card-glow  { 0%,100%{border-color:var(--ember-dim);box-shadow:0 0 0 transparent} 50%{border-color:var(--ember);box-shadow:0 0 20px rgba(232,144,42,.18)} }
+@keyframes badge-pulse{ 0%,100%{opacity:.6} 50%{opacity:1} }
+@keyframes fade-in    { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ════════════════════════
    SCREEN 1 — PARTY
-══════════════════════ */
-#party-view { display:none; padding:18px 14px; }
-.party-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px; }
+════════════════════════ */
+#party-view { display:none; }
+.party-inner { max-width:var(--max-w); margin:0 auto; padding:24px 20px; }
+
+.party-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
 
 .party-card { background:var(--stone); border:1px solid var(--crack); cursor:pointer; transition:all .3s; position:relative; overflow:hidden; }
-.party-card::after { content:''; position:absolute; top:0; right:0; width:9px; height:9px; background:var(--bg); clip-path:polygon(100% 0,0 0,100% 100%); z-index:2; }
-.party-card:hover { border-color:var(--ember-dim); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.6); }
+.party-card::after { content:''; position:absolute; top:0; right:0; width:10px; height:10px; background:var(--bg); clip-path:polygon(100% 0,0 0,100% 100%); z-index:2; }
+.party-card:hover { border-color:var(--ember-dim); transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,0,0,.7); }
 .party-card.awakened { animation:card-glow 3s ease-in-out infinite; }
-.party-card.awakened .card-img-wrap::after { content:''; position:absolute; bottom:0; left:0; right:0; height:50%; background:linear-gradient(to top,rgba(232,144,42,.1),transparent); animation:breathe 3s ease-in-out infinite; z-index:1; }
+.party-card.awakened .card-img-wrap::after { content:''; position:absolute; bottom:0; left:0; right:0; height:50%; background:linear-gradient(to top,rgba(232,144,42,.12),transparent); animation:breathe 3s ease-in-out infinite; z-index:1; }
 
 .card-img-wrap { width:100%; aspect-ratio:3/4; background:var(--stone2); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
 .card-img-wrap img { width:100%; height:100%; object-fit:cover; object-position:center top; filter:saturate(.65) brightness(.8); transition:filter .3s; position:relative; z-index:0; }
-.party-card:hover .card-img-wrap img { filter:saturate(.85) brightness(.95); }
-.card-placeholder { font-size:26px; opacity:.1; color:var(--ember); font-family:'Cinzel Decorative',serif; }
+.party-card:hover .card-img-wrap img { filter:saturate(.9) brightness(.95); }
+.card-placeholder { font-size:32px; opacity:.08; color:var(--ember); font-family:'Cinzel Decorative',serif; }
 
-.card-body { padding:8px 10px 10px; border-top:1px solid var(--crack); position:relative; z-index:2; }
-.card-char-name { font-family:'Cinzel',serif; font-size:10px; font-weight:500; color:var(--white-heat); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.card-heirloom  { font-size:10px; font-style:italic; color:var(--text-dim); margin-bottom:7px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.card-footer { display:flex; align-items:center; justify-content:space-between; gap:3px; }
-.pips { display:flex; gap:2px; flex-wrap:wrap; }
-.pip { width:4px; height:4px; border-radius:50%; background:var(--teal-dim); border:1px solid var(--teal); }
+.card-body { padding:10px 12px 12px; border-top:1px solid var(--crack); position:relative; z-index:2; }
+.card-char-name { font-family:'Cinzel',serif; font-size:12px; font-weight:500; color:var(--white-heat); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card-heirloom  { font-size:11px; font-style:italic; color:var(--text-dim); margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card-footer { display:flex; align-items:center; justify-content:space-between; gap:4px; }
+.pips { display:flex; gap:3px; flex-wrap:wrap; }
+.pip { width:5px; height:5px; border-radius:50%; background:var(--teal-dim); border:1px solid var(--teal); }
 .pip.empty { background:transparent; border-color:var(--crack-lit); }
-.pts-badge { font-family:'Cinzel',serif; font-size:8px; color:var(--flame); background:rgba(245,200,66,.07); border:1px solid var(--flame-dim); padding:2px 5px; flex-shrink:0; animation:badge-pulse 3s ease-in-out infinite; }
+.pts-badge { font-family:'Cinzel',serif; font-size:9px; color:var(--flame); background:rgba(245,200,66,.07); border:1px solid var(--flame-dim); padding:2px 6px; flex-shrink:0; animation:badge-pulse 3s ease-in-out infinite; }
 
-/* ══════════════════════
+/* ════════════════════════
    SCREEN 2 — CHARACTER
-══════════════════════ */
+════════════════════════ */
 #char-view { display:none; }
+.char-inner { max-width:var(--max-w); margin:0 auto; }
 
-.char-hero { position:relative; height:168px; overflow:hidden; background:var(--stone2); }
+.char-hero { position:relative; height:220px; overflow:hidden; background:var(--stone2); }
 .char-hero-img { width:100%; height:100%; object-fit:cover; object-position:center top; filter:saturate(.5) brightness(.55); }
-.char-hero-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:58px; opacity:.07; color:var(--ember); font-family:'Cinzel Decorative',serif; }
-.char-hero::before { content:''; position:absolute; bottom:0; left:0; right:0; height:55%; background:linear-gradient(to top,rgba(180,70,10,.18),transparent); z-index:1; animation:breathe 3s ease-in-out infinite; }
-.char-hero-overlay { position:absolute; inset:0; background:linear-gradient(to top,var(--bg) 0%,rgba(7,6,10,.3) 55%,transparent 100%); z-index:2; }
-.char-hero-content { position:absolute; bottom:0; left:0; right:0; padding:14px 18px 12px; z-index:3; }
-.char-name           { font-family:'Cinzel',serif; font-size:17px; font-weight:500; color:var(--white-heat); letter-spacing:1px; margin-bottom:2px; text-shadow:0 0 20px rgba(232,144,42,.3); }
-.char-heirloom-title { font-size:13px; font-style:italic; color:var(--ember); margin-bottom:7px; }
-.char-meta { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
-.meta-chip { font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--text-dim); padding:2px 8px; border:1px solid var(--crack-lit); clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); }
-.pts-row  { display:flex; align-items:baseline; gap:4px; }
-.pts-big  { font-family:'Cinzel Decorative',serif; font-size:18px; color:var(--flame); text-shadow:0 0 12px rgba(245,200,66,.4); animation:badge-pulse 3s ease-in-out infinite; }
-.pts-small{ font-family:'Cinzel',serif; font-size:7px; letter-spacing:3px; text-transform:uppercase; color:var(--ember-dim); }
+.char-hero-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:72px; opacity:.06; color:var(--ember); font-family:'Cinzel Decorative',serif; }
+.char-hero::before { content:''; position:absolute; bottom:0; left:0; right:0; height:60%; background:linear-gradient(to top,rgba(180,70,10,.2),transparent); z-index:1; animation:breathe 3s ease-in-out infinite; }
+.char-hero-overlay { position:absolute; inset:0; background:linear-gradient(to top,var(--bg) 0%,rgba(7,6,10,.2) 60%,transparent 100%); z-index:2; }
+.char-hero-content { position:absolute; bottom:0; left:0; right:0; padding:18px 24px 16px; z-index:3; }
 
-.upload-row { padding:8px 18px 0; display:flex; align-items:center; gap:8px; }
-.upload-btn { background:transparent; border:1px dashed var(--crack-lit); color:var(--text-faint); font-family:'Cinzel',serif; font-size:7px; letter-spacing:3px; text-transform:uppercase; padding:5px 12px; cursor:pointer; transition:all .2s; }
+.char-name           { font-family:'Cinzel',serif; font-size:22px; font-weight:500; color:var(--white-heat); letter-spacing:1px; margin-bottom:3px; text-shadow:0 0 24px rgba(232,144,42,.35); }
+.char-heirloom-title { font-size:15px; font-style:italic; color:var(--ember); margin-bottom:9px; }
+.char-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.meta-chip { font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--text-dim); padding:3px 10px; border:1px solid var(--crack-lit); clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%); }
+.pts-row   { display:flex; align-items:baseline; gap:5px; }
+.pts-big   { font-family:'Cinzel Decorative',serif; font-size:22px; color:var(--flame); text-shadow:0 0 14px rgba(245,200,66,.4); animation:badge-pulse 3s ease-in-out infinite; }
+.pts-small { font-family:'Cinzel',serif; font-size:7px; letter-spacing:3px; text-transform:uppercase; color:var(--ember-dim); }
+
+.upload-row { padding:10px 24px 0; display:flex; align-items:center; gap:10px; }
+.upload-btn { background:transparent; border:1px dashed var(--crack-lit); color:var(--text-faint); font-family:'Cinzel',serif; font-size:7px; letter-spacing:3px; text-transform:uppercase; padding:5px 14px; cursor:pointer; transition:all .2s; }
 .upload-btn:hover { border-color:var(--ember-dim); color:var(--ember); }
 #image-input { display:none; }
-.upload-status { font-size:11px; color:var(--text-dim); font-style:italic; }
+.upload-status { font-size:12px; color:var(--text-dim); font-style:italic; }
 
-.char-body { padding:12px 18px 20px; }
-.section-title { font-family:'Cinzel',serif; font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.char-body { padding:14px 24px 24px; }
+.section-title { font-family:'Cinzel',serif; font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px; display:flex; align-items:center; gap:10px; }
 .section-title::before { content:'✦'; color:var(--ember-dim); font-size:7px; }
 .section-title::after  { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--crack) 0%,transparent 100%); }
 
-.taken-list { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
-.taken-item { display:flex; align-items:flex-start; gap:8px; background:rgba(232,144,42,.025); border:1px solid var(--crack); border-left:2px solid var(--ember-dim); padding:7px 10px; }
-.taken-dot  { width:4px; height:4px; border-radius:50%; background:var(--ember); margin-top:5px; flex-shrink:0; box-shadow:0 0 5px rgba(232,144,42,.5); }
+/* taken list */
+.taken-list { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.taken-item { display:flex; align-items:flex-start; gap:10px; background:rgba(232,144,42,.025); border:1px solid var(--crack); border-left:2px solid var(--ember-dim); padding:9px 12px; }
+.taken-dot  { width:5px; height:5px; border-radius:50%; background:var(--ember); margin-top:5px; flex-shrink:0; box-shadow:0 0 5px rgba(232,144,42,.5); }
 .taken-info { flex:1; }
-.taken-name   { font-family:'Cinzel',serif; font-size:10px; color:var(--ember); margin-bottom:1px; }
-.taken-effect { font-size:12px; color:var(--text-dim); line-height:1.4; font-weight:300; }
-.taken-count  { font-family:'Cinzel',serif; font-size:8px; color:var(--purple); border:1px solid var(--purple-dim); padding:1px 5px; flex-shrink:0; margin-top:2px; }
-.taken-empty  { font-size:13px; font-style:italic; color:var(--text-faint); padding:6px 0; }
+.taken-name   { font-family:'Cinzel',serif; font-size:11px; color:var(--ember); margin-bottom:2px; }
+.taken-effect { font-size:13px; color:var(--text-dim); line-height:1.5; font-weight:300; }
+.taken-count  { font-family:'Cinzel',serif; font-size:9px; color:var(--purple); border:1px solid var(--purple-dim); padding:2px 6px; flex-shrink:0; margin-top:2px; }
+.taken-empty  { font-size:14px; font-style:italic; color:var(--text-faint); padding:8px 0; }
 
-.view-toggle { display:flex; gap:6px; margin-bottom:12px; }
-.toggle-btn { flex:1; padding:8px; background:transparent; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+/* view toggle */
+.view-toggle { display:flex; gap:6px; margin-bottom:14px; }
+.toggle-btn { flex:1; padding:9px; background:transparent; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
 .toggle-btn.active { border-color:var(--ember-dim); color:var(--ember); background:rgba(232,144,42,.05); }
 .toggle-btn:hover:not(.active) { border-color:var(--crack-lit); color:var(--text); }
 
-.awaken-btn { width:100%; padding:12px; background:linear-gradient(135deg,rgba(232,144,42,.08),rgba(245,200,66,.04)); border:1px solid var(--ember-dim); color:var(--flame); font-family:'Cinzel',serif; font-size:9px; letter-spacing:4px; text-transform:uppercase; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:10px; position:relative; overflow:hidden; margin-bottom:8px; }
+.awaken-btn { width:100%; padding:13px; background:linear-gradient(135deg,rgba(232,144,42,.09),rgba(245,200,66,.04)); border:1px solid var(--ember-dim); color:var(--flame); font-family:'Cinzel',serif; font-size:10px; letter-spacing:4px; text-transform:uppercase; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:12px; position:relative; overflow:hidden; margin-bottom:8px; }
 .awaken-btn::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--flame-dim),transparent); }
-.awaken-btn:hover:not(:disabled) { background:rgba(232,144,42,.14); box-shadow:0 0 24px rgba(232,144,42,.18); }
+.awaken-btn:hover:not(:disabled) { background:rgba(232,144,42,.15); box-shadow:0 0 28px rgba(232,144,42,.2); }
 .awaken-btn.pulsing { animation:card-glow 3s ease-in-out infinite; }
 .awaken-btn:disabled { opacity:.25; cursor:not-allowed; }
-.back-link { width:100%; padding:8px; background:transparent; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+.back-link { width:100%; padding:9px; background:transparent; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
 .back-link:hover { border-color:var(--crack-lit); color:var(--text); }
 
-/* ══════════════════════
-   TIER TREE VIEW
-══════════════════════ */
+/* ── TREE VIEW ── */
 .tier-block { }
-
-.tier-header {
-  display:flex; align-items:center; gap:0;
-  padding:10px 18px 9px; border-bottom:1px solid var(--crack);
-  position:sticky; top:0; z-index:5; background:var(--stone);
-  cursor:pointer; user-select:none; position:relative;
-}
+.tier-header { display:flex; align-items:center; padding:11px 24px 10px; border-bottom:1px solid var(--crack); position:sticky; top:0; z-index:5; background:var(--stone); cursor:pointer; user-select:none; position:relative; }
 .tier-header::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; }
 .tier-1 .tier-header::after { background:linear-gradient(90deg,transparent,var(--t1),transparent); }
 .tier-2 .tier-header::after { background:linear-gradient(90deg,transparent,var(--t2),transparent); }
 .tier-3 .tier-header::after { background:linear-gradient(90deg,transparent,var(--t3),transparent); }
 .tier-4 .tier-header::after { background:linear-gradient(90deg,transparent,var(--t4),transparent); }
-
-.tier-pip { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-right:10px; }
-.tier-1 .tier-pip { background:var(--t1); box-shadow:0 0 6px var(--t1); }
-.tier-2 .tier-pip { background:var(--t2); box-shadow:0 0 6px var(--t2); }
-.tier-3 .tier-pip { background:var(--t3); box-shadow:0 0 6px var(--t3); }
-.tier-4 .tier-pip { background:var(--t4); box-shadow:0 0 6px rgba(232,224,248,.5); }
-
+.tier-pip { width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-right:12px; }
+.tier-1 .tier-pip { background:var(--t1); box-shadow:0 0 7px var(--t1); }
+.tier-2 .tier-pip { background:var(--t2); box-shadow:0 0 7px var(--t2); }
+.tier-3 .tier-pip { background:var(--t3); box-shadow:0 0 7px var(--t3); }
+.tier-4 .tier-pip { background:var(--t4); box-shadow:0 0 7px rgba(232,224,248,.6); }
 .tier-name { font-family:'Cinzel',serif; font-size:10px; letter-spacing:4px; text-transform:uppercase; flex:1; }
 .tier-1 .tier-name { color:var(--t1); }
 .tier-2 .tier-name { color:var(--t2); }
 .tier-3 .tier-name { color:var(--t3); }
 .tier-4 .tier-name { color:var(--t4); }
-
 .tier-level-req { font-family:'Cinzel',serif; font-size:8px; letter-spacing:2px; color:var(--text-dim); }
-.tier-lock-icon { font-size:11px; color:var(--text-faint); margin-left:8px; }
-.tier-chevron { font-size:10px; color:var(--text-faint); margin-left:8px; transition:transform .2s; }
+.tier-lock-icon { font-size:12px; color:var(--text-faint); margin-left:10px; }
+.tier-chevron { font-size:10px; color:var(--text-faint); margin-left:10px; transition:transform .2s; }
 .tier-chevron.open { transform:rotate(180deg); }
-
-.tier-locked-banner { padding:10px 18px; text-align:center; font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); background:var(--stone); border-bottom:1px solid var(--crack); }
+.tier-locked-banner { padding:12px 24px; text-align:center; font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); background:var(--stone); border-bottom:1px solid var(--crack); }
 .tier-content { display:none; }
 .tier-content.open { display:block; }
-
-.tree-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:10px 12px; }
-.tree-section-label { padding:6px 14px 4px; font-family:'Cinzel',serif; font-size:7px; letter-spacing:5px; text-transform:uppercase; color:var(--text-faint); border-top:1px solid var(--crack); }
-
-.tree-card { background:var(--stone2); border:1px solid var(--crack); padding:10px 11px; position:relative; overflow:hidden; transition:all .2s; }
+.tree-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:8px; padding:12px 16px; }
+.tree-section-label { padding:8px 16px 5px; font-family:'Cinzel',serif; font-size:7px; letter-spacing:5px; text-transform:uppercase; color:var(--text-faint); border-top:1px solid var(--crack); }
+.tree-card { background:var(--stone2); border:1px solid var(--crack); padding:11px 13px; position:relative; overflow:hidden; }
 .tree-card::before { content:''; position:absolute; top:0; left:0; width:2px; height:100%; }
 .tier-1 .tree-card::before { background:var(--t1); }
 .tier-2 .tree-card::before { background:var(--t2); }
@@ -218,175 +223,254 @@ header::after {
 .tier-4 .tree-card::before { background:var(--t4); }
 .tree-card.taken { background:rgba(232,144,42,.04); border-color:var(--ember-dim); }
 .tree-card.unavailable { opacity:.3; }
-
-.tree-card-name { font-family:'Cinzel',serif; font-size:10px; color:var(--white-heat); margin-bottom:4px; line-height:1.2; }
+.tree-card-name { font-family:'Cinzel',serif; font-size:11px; color:var(--white-heat); margin-bottom:4px; line-height:1.2; }
 .tree-card.taken .tree-card-name { color:var(--ember); }
-.tree-card-meta { display:flex; align-items:center; gap:4px; margin-bottom:5px; flex-wrap:wrap; }
+.tree-card-meta { display:flex; align-items:center; gap:4px; margin-bottom:6px; flex-wrap:wrap; }
 .tree-badge { font-family:'Cinzel',serif; font-size:7px; letter-spacing:1px; padding:1px 5px; border:1px solid; }
 .tb-cost   { border-color:var(--ember-dim); color:var(--ember); }
 .tb-repeat { border-color:var(--purple-dim); color:var(--purple); }
 .tb-req    { border-color:var(--crack-lit); color:var(--text-faint); }
 .tb-taken  { border-color:var(--teal-dim); color:var(--teal); }
-.tree-card-effect { font-size:11px; color:var(--text-dim); line-height:1.4; font-weight:300; }
+.tree-card-effect { font-size:12px; color:var(--text-dim); line-height:1.45; font-weight:300; }
 
-/* ══════════════════════
-   SCREEN 3 — SPEND
-══════════════════════ */
-#spend-view { display:none; padding:14px 14px 22px; }
-.spend-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.spend-back { background:none; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; padding:5px 11px; cursor:pointer; transition:all .2s; }
+/* ════════════════════════
+   SCREEN 3 — SPEND (GRID)
+════════════════════════ */
+#spend-view { display:none; }
+.spend-inner { max-width:var(--max-w); margin:0 auto; padding:18px 20px 28px; }
+
+/* top bar */
+.spend-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px; }
+.spend-back { background:none; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; padding:6px 14px; cursor:pointer; transition:all .2s; flex-shrink:0; }
 .spend-back:hover { border-color:var(--crack-lit); color:var(--text); }
-.spend-counter { font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px; color:var(--text-dim); }
+.spend-pts  { font-family:'Cinzel',serif; font-size:11px; color:var(--flame); letter-spacing:2px; flex-shrink:0; }
 
-.tier-filters { display:flex; gap:5px; margin-bottom:12px; flex-wrap:wrap; }
-.tier-filter { padding:4px 10px; background:transparent; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
-.tier-filter:hover { border-color:var(--crack-lit); color:var(--text); }
-.tier-filter.active.tf-all { border-color:var(--ember-dim); color:var(--ember); background:rgba(232,144,42,.05); }
-.tier-filter.active.tf-1   { border-color:var(--t1); color:var(--t1); background:rgba(200,164,90,.06); }
-.tier-filter.active.tf-2   { border-color:var(--t2); color:var(--t2); background:rgba(232,144,42,.06); }
-.tier-filter.active.tf-3   { border-color:var(--t3); color:var(--t3); background:rgba(245,200,66,.06); }
-.tier-filter.active.tf-4   { border-color:var(--t4); color:var(--t4); background:rgba(232,224,248,.04); }
+/* search */
+.spend-search-wrap { position:relative; flex:1; }
+.spend-search { width:100%; background:var(--stone2); border:1px solid var(--crack); color:var(--text); font-family:'Crimson Pro',serif; font-size:14px; padding:7px 14px 7px 34px; outline:none; transition:border-color .2s; }
+.spend-search::placeholder { color:var(--text-faint); }
+.spend-search:focus { border-color:var(--crack-lit); }
+.search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-faint); font-size:13px; pointer-events:none; }
 
-.card-stage { position:relative; display:flex; align-items:center; justify-content:center; padding:8px 0 4px; margin-bottom:10px; min-height:228px; }
-.ghost-card { position:absolute; width:calc(100% - 64px); height:218px; background:var(--stone); border:1px solid var(--crack); }
-.ghost-card.gl { transform:translateX(-14px) scale(.95) rotate(-.6deg); z-index:0; opacity:.5; }
-.ghost-card.gr { transform:translateX(14px) scale(.95) rotate(.6deg); z-index:0; opacity:.5; }
-.card-nav { display:flex; align-items:center; gap:6px; position:relative; z-index:3; width:100%; }
-.nav-btn { width:30px; height:30px; flex-shrink:0; background:var(--stone2); border:1px solid var(--crack); color:var(--text-dim); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
-.nav-btn:hover { border-color:var(--ember-dim); color:var(--ember); }
-.nav-btn:disabled { opacity:.2; cursor:not-allowed; }
+/* tier + category filters */
+.spend-filters { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+.filter-group-label { font-family:'Cinzel',serif; font-size:7px; letter-spacing:4px; text-transform:uppercase; color:var(--text-faint); margin-right:2px; }
+.spend-filter { padding:5px 12px; background:transparent; border:1px solid var(--crack); color:var(--text-dim); font-family:'Cinzel',serif; font-size:8px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.spend-filter:hover { border-color:var(--crack-lit); color:var(--text); }
+.spend-filter.active       { border-color:var(--ember-dim); color:var(--ember); background:rgba(232,144,42,.06); }
+.spend-filter.active.tf-1  { border-color:var(--t1); color:var(--t1); background:rgba(200,164,90,.06); }
+.spend-filter.active.tf-2  { border-color:var(--t2); color:var(--t2); background:rgba(232,144,42,.06); }
+.spend-filter.active.tf-3  { border-color:var(--t3); color:var(--t3); background:rgba(245,200,66,.06); }
+.spend-filter.active.tf-4  { border-color:var(--t4); color:var(--t4); background:rgba(232,224,248,.04); }
 
-.upgrade-card { flex:1; background:var(--stone); border:1px solid var(--crack-lit); padding:18px 15px 15px; position:relative; overflow:hidden; min-height:218px; display:flex; flex-direction:column; box-shadow:0 10px 36px rgba(0,0,0,.6); }
-.upgrade-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
-.upgrade-card.tc1::before { background:linear-gradient(90deg,transparent,var(--t1),transparent); }
-.upgrade-card.tc2::before { background:linear-gradient(90deg,transparent,var(--t2),transparent); }
-.upgrade-card.tc3::before { background:linear-gradient(90deg,transparent,var(--t3),transparent); }
-.upgrade-card.tc4::before { background:linear-gradient(90deg,transparent,var(--t4),transparent); }
-.upgrade-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:30%; background:linear-gradient(to top,rgba(180,80,10,.06),transparent); pointer-events:none; }
-.upgrade-card.locked { border-color:var(--crack); opacity:.4; }
-.upgrade-card.locked::before { background:var(--crack); }
+.divider-line { width:1px; height:20px; background:var(--crack); flex-shrink:0; }
 
-.up-tier-label { font-family:'Cinzel',serif; font-size:7px; letter-spacing:5px; text-transform:uppercase; margin-bottom:8px; }
-.up-tier-label.tc1 { color:var(--t1); }
-.up-tier-label.tc2 { color:var(--t2); }
-.up-tier-label.tc3 { color:var(--t3); }
-.up-tier-label.tc4 { color:var(--t4); opacity:.7; }
-.up-name   { font-family:'Cinzel Decorative',serif; font-size:15px; color:var(--white-heat); line-height:1.2; margin-bottom:7px; text-shadow:0 0 14px rgba(232,144,42,.15); }
-.up-badges { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px; }
-.badge { font-family:'Cinzel',serif; font-size:7px; letter-spacing:2px; padding:2px 6px; border:1px solid; }
-.b-cost       { border-color:var(--ember-dim); color:var(--ember); }
-.b-req        { border-color:var(--crack-lit); color:var(--text-dim); }
-.b-locked-lvl { border-color:var(--red); color:var(--red); opacity:.7; }
-.b-repeat     { border-color:var(--purple-dim); color:var(--purple); }
-.b-no-pts     { border-color:var(--red); color:var(--red); opacity:.7; }
-.up-rule   { height:1px; margin-bottom:10px; background:linear-gradient(90deg,var(--ember-dim),var(--crack),transparent); }
-.up-effect { font-size:13px; line-height:1.65; color:var(--text); font-weight:300; flex:1; }
-.up-effect em { color:var(--flame); font-style:normal; }
+/* results count */
+.spend-results-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.spend-results-count { font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); }
+.spend-toggle-locked { font-family:'Cinzel',serif; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--text-faint); background:none; border:none; cursor:pointer; padding:0; transition:color .2s; }
+.spend-toggle-locked:hover { color:var(--text-dim); }
 
-.confirm-area { margin-top:10px; }
-.confirm-btn { width:100%; padding:11px; background:linear-gradient(135deg,rgba(232,144,42,.1),rgba(245,200,66,.05)); border:1px solid var(--ember-dim); color:var(--flame); font-family:'Cinzel',serif; font-size:9px; letter-spacing:4px; text-transform:uppercase; cursor:pointer; transition:all .25s; position:relative; overflow:hidden; }
+/* upgrade grid */
+.spend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.sg-card {
+  background: var(--stone);
+  border: 1px solid var(--crack);
+  padding: 14px 15px 13px;
+  position: relative; overflow: hidden;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.sg-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.sg-card.tc1::before { background:linear-gradient(90deg,transparent,var(--t1),transparent); }
+.sg-card.tc2::before { background:linear-gradient(90deg,transparent,var(--t2),transparent); }
+.sg-card.tc3::before { background:linear-gradient(90deg,transparent,var(--t3),transparent); }
+.sg-card.tc4::before { background:linear-gradient(90deg,transparent,var(--t4),transparent); }
+
+.sg-card:hover:not(.sg-locked) { border-color:var(--ember-dim); transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,.5); }
+.sg-card.sg-locked { opacity:.4; cursor:default; }
+.sg-card.sg-locked::before { background:var(--crack); }
+
+.sg-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.sg-name { font-family:'Cinzel',serif; font-size:12px; color:var(--white-heat); line-height:1.2; flex:1; }
+.sg-cost { font-family:'Cinzel Decorative',serif; font-size:14px; color:var(--flame); flex-shrink:0; text-shadow:0 0 10px rgba(245,200,66,.3); }
+.sg-cost.locked-cost { color:var(--text-faint); text-shadow:none; }
+
+.sg-badges { display:flex; gap:4px; flex-wrap:wrap; }
+.sg-badge { font-family:'Cinzel',serif; font-size:7px; letter-spacing:1px; padding:1px 5px; border:1px solid; }
+.sgb-tier   { border-color:var(--crack-lit); color:var(--text-faint); }
+.sgb-repeat { border-color:var(--purple-dim); color:var(--purple); }
+.sgb-req    { border-color:var(--crack-lit); color:var(--text-faint); font-style:italic; }
+.sgb-lock   { border-color:var(--red); color:var(--red); opacity:.7; }
+.sgb-nopt   { border-color:var(--red); color:var(--red); opacity:.7; }
+
+.sg-effect { font-size:12px; color:var(--text-dim); line-height:1.5; font-weight:300; }
+.sg-effect em { color:var(--flame); font-style:normal; }
+
+/* selected card overlay */
+.sg-card.selected { border-color:var(--ember); background:rgba(232,144,42,.06); }
+.sg-card.selected .sg-name { color:var(--ember); }
+
+/* confirm bar — sticky at bottom */
+.confirm-bar {
+  position: sticky; bottom: 0; left: 0; right: 0;
+  background: var(--stone); border-top: 1px solid var(--crack);
+  padding: 0; z-index: 20;
+}
+.confirm-bar::before {
+  content:''; display:block; height:1px;
+  background:linear-gradient(90deg,transparent,var(--ember-dim),var(--flame-dim),var(--ember-dim),transparent);
+}
+.confirm-bar-inner { max-width:var(--max-w); margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px; }
+.confirm-selected { flex:1; }
+.confirm-selected-name { font-family:'Cinzel',serif; font-size:12px; color:var(--ember); margin-bottom:2px; }
+.confirm-selected-effect { font-size:12px; color:var(--text-dim); font-weight:300; line-height:1.4; }
+.confirm-selected-none { font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--text-faint); }
+.confirm-btn {
+  padding:11px 22px; flex-shrink:0;
+  background:linear-gradient(135deg,rgba(232,144,42,.1),rgba(245,200,66,.05));
+  border:1px solid var(--ember-dim); color:var(--flame);
+  font-family:'Cinzel',serif; font-size:9px; letter-spacing:4px; text-transform:uppercase;
+  cursor:pointer; transition:all .25s; position:relative; overflow:hidden; white-space:nowrap;
+}
 .confirm-btn::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--flame-dim),transparent); }
-.confirm-btn:hover:not(:disabled) { background:rgba(232,144,42,.16); box-shadow:0 0 22px rgba(232,144,42,.18); }
+.confirm-btn:hover:not(:disabled) { background:rgba(232,144,42,.16); box-shadow:0 0 22px rgba(232,144,42,.2); }
 .confirm-btn:disabled { opacity:.2; cursor:not-allowed; background:transparent; box-shadow:none; border-color:var(--crack); color:var(--text-faint); }
 
-.toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--stone2); border:1px solid var(--ember-dim); color:var(--flame); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; padding:9px 18px; z-index:9998; white-space:nowrap; opacity:0; transition:opacity .3s; pointer-events:none; }
+.no-results { padding:40px 20px; text-align:center; font-size:14px; font-style:italic; color:var(--text-faint); }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--stone2); border:1px solid var(--ember-dim); color:var(--flame); font-family:'Cinzel',serif; font-size:8px; letter-spacing:3px; text-transform:uppercase; padding:10px 20px; z-index:9998; white-space:nowrap; opacity:0; transition:opacity .3s; pointer-events:none; }
 .toast.show { opacity:1; }
 </style>
 </head>
 <body>
+
 <header>
-  <div>
-    <div class="logo-eyebrow">Embers of the Fallen</div>
-    <div class="logo">Heirloom Awakenings</div>
-  </div>
-  <div class="header-right">
-    <div class="header-level" id="header-level"></div>
-    <div class="header-char"  id="header-char"></div>
+  <div class="header-inner">
+    <div>
+      <div class="logo-eyebrow">Embers of the Fallen</div>
+      <div class="logo">Heirloom Awakenings</div>
+    </div>
+    <div class="header-right">
+      <div class="header-level" id="header-level"></div>
+      <div class="header-char"  id="header-char"></div>
+    </div>
   </div>
 </header>
 
 <div class="scroll-area" id="scroll-area">
   <div id="loading"><div class="loading-glyph">✦</div><div class="loading-text">The Eldryn stirs…</div></div>
-  <div id="config-notice"><strong>Setup Required</strong>Open <code>index.html</code> and replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> with your project values from <strong>Supabase → Settings → API</strong>.</div>
+  <div id="config-notice"><strong>Setup Required</strong>Open <code>index.html</code> and replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> with your values from <strong>Supabase → Settings → API</strong>.</div>
   <div id="error-msg"></div>
 
-  <!-- SCREEN 1 -->
-  <div id="party-view"><div class="party-grid" id="party-grid"></div></div>
+  <!-- SCREEN 1: PARTY -->
+  <div id="party-view">
+    <div class="party-inner">
+      <div class="party-grid" id="party-grid"></div>
+    </div>
+  </div>
 
-  <!-- SCREEN 2 -->
+  <!-- SCREEN 2: CHARACTER -->
   <div id="char-view">
-    <div class="char-hero" id="char-hero">
-      <div class="char-hero-placeholder" id="char-hero-placeholder">✦</div>
-      <div class="char-hero-overlay"></div>
-      <div class="char-hero-content">
-        <div class="char-name" id="char-name"></div>
-        <div class="char-heirloom-title" id="char-heirloom-title"></div>
-        <div class="char-meta">
-          <div class="meta-chip" id="char-type"></div>
-          <div class="meta-chip" id="char-level-chip"></div>
-          <div class="pts-row" id="char-pts-row" style="display:none">
-            <span class="pts-big" id="char-pts-num"></span>
-            <span class="pts-small">SP to spend</span>
+    <div class="char-inner">
+      <div class="char-hero" id="char-hero">
+        <div class="char-hero-placeholder" id="char-hero-placeholder">✦</div>
+        <div class="char-hero-overlay"></div>
+        <div class="char-hero-content">
+          <div class="char-name" id="char-name"></div>
+          <div class="char-heirloom-title" id="char-heirloom-title"></div>
+          <div class="char-meta">
+            <div class="meta-chip" id="char-type"></div>
+            <div class="meta-chip" id="char-level-chip"></div>
+            <div class="pts-row" id="char-pts-row" style="display:none">
+              <span class="pts-big" id="char-pts-num"></span>
+              <span class="pts-small">SP to spend</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="upload-row">
-      <button class="upload-btn" onclick="document.getElementById('image-input').click()">✦ Upload Image</button>
-      <input type="file" id="image-input" accept="image/*" onchange="handleImageUpload(event)"/>
-      <span class="upload-status" id="upload-status"></span>
-    </div>
-
-    <div class="char-body">
-      <div class="view-toggle">
-        <button class="toggle-btn active" id="toggle-taken" onclick="switchView('taken')">Attuned</button>
-        <button class="toggle-btn"        id="toggle-tree"  onclick="switchView('tree')">Awakening Tree</button>
+      <div class="upload-row">
+        <button class="upload-btn" onclick="document.getElementById('image-input').click()">✦ Upload Image</button>
+        <input type="file" id="image-input" accept="image/*" onchange="handleImageUpload(event)"/>
+        <span class="upload-status" id="upload-status"></span>
       </div>
 
-      <div id="taken-panel">
-        <div class="taken-list" id="taken-list"></div>
-        <button class="awaken-btn" id="awaken-btn" onclick="goToSpend()">✦ &nbsp; Spend an Awakening &nbsp; ✦</button>
-        <button class="back-link" onclick="goToParty()">← Return to Party</button>
-      </div>
+      <div class="char-body">
+        <div class="view-toggle">
+          <button class="toggle-btn active" id="toggle-taken" onclick="switchView('taken')">Attuned</button>
+          <button class="toggle-btn"        id="toggle-tree"  onclick="switchView('tree')">Awakening Tree</button>
+        </div>
 
-      <div id="tree-panel" style="display:none">
-        <div id="tree-view"></div>
-        <div style="height:8px"></div>
-        <button class="awaken-btn" id="awaken-btn-tree" onclick="goToSpend()">✦ &nbsp; Spend an Awakening &nbsp; ✦</button>
-        <button class="back-link" onclick="goToParty()">← Return to Party</button>
+        <div id="taken-panel">
+          <div class="section-title">Attuned Awakenings</div>
+          <div class="taken-list" id="taken-list"></div>
+          <button class="awaken-btn" id="awaken-btn" onclick="goToSpend()">✦ &nbsp; Spend an Awakening &nbsp; ✦</button>
+          <button class="back-link" onclick="goToParty()">← Return to Party</button>
+        </div>
+
+        <div id="tree-panel" style="display:none">
+          <div id="tree-view"></div>
+          <div style="height:10px"></div>
+          <button class="awaken-btn" id="awaken-btn-tree" onclick="goToSpend()">✦ &nbsp; Spend an Awakening &nbsp; ✦</button>
+          <button class="back-link" onclick="goToParty()">← Return to Party</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- SCREEN 3 -->
+  <!-- SCREEN 3: SPEND -->
   <div id="spend-view">
-    <div class="spend-header">
-      <button class="spend-back" id="spend-back">← Return</button>
-      <div class="spend-counter" id="spend-counter"></div>
+    <div class="spend-inner">
+      <!-- top bar -->
+      <div class="spend-topbar">
+        <button class="spend-back" id="spend-back">← Return</button>
+        <div class="spend-search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="spend-search" id="spend-search" type="text" placeholder="Search awakenings…" oninput="onSearch()"/>
+        </div>
+        <div class="spend-pts" id="spend-pts"></div>
+      </div>
+
+      <!-- filters -->
+      <div class="spend-filters" id="spend-filters"></div>
+
+      <!-- results row -->
+      <div class="spend-results-row">
+        <div class="spend-results-count" id="spend-results-count"></div>
+        <button class="spend-toggle-locked" id="toggle-locked-btn" onclick="toggleShowLocked()"></button>
+      </div>
+
+      <!-- grid -->
+      <div class="spend-grid" id="spend-grid"></div>
+      <div class="no-results" id="no-results" style="display:none">No awakenings match your search.</div>
     </div>
-    <div class="tier-filters" id="tier-filters"></div>
-    <div class="card-stage">
-      <div class="ghost-card gl"></div>
-      <div class="ghost-card gr"></div>
-      <div class="card-nav">
-        <button class="nav-btn" id="nav-prev" onclick="navigateCard(-1)">‹</button>
-        <div class="upgrade-card" id="upgrade-card-el"></div>
-        <button class="nav-btn" id="nav-next" onclick="navigateCard(1)">›</button>
+
+    <!-- sticky confirm bar -->
+    <div class="confirm-bar" id="confirm-bar">
+      <div class="confirm-bar-inner">
+        <div class="confirm-selected" id="confirm-selected">
+          <div class="confirm-selected-none">Select an awakening above</div>
+        </div>
+        <button class="confirm-btn" id="confirm-btn" disabled onclick="confirmAwakening()">✦ &nbsp; Awaken</button>
       </div>
     </div>
-    <div class="confirm-area">
-      <button class="confirm-btn" id="confirm-btn" onclick="confirmAwakening()">✦ &nbsp; Awaken This Gift</button>
-    </div>
   </div>
-</div>
+
+</div><!-- end scroll-area -->
 
 <div class="toast" id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════════
 //  CONFIG — replace with your Supabase values
-//  Supabase Dashboard → Settings → API
 // ═══════════════════════════════════════════
 const SUPABASE_URL      = 'https://esanxehwfmiktwmxzzrv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_MOlcKwFGCBaXhMtKiDOafw_wWHdvsl-';
@@ -399,8 +483,13 @@ const TIERS = [
   { tier:4, label:'Tier IV',  minLevel:15 },
 ];
 
+// All unique requirement categories pulled from data
+let CATEGORIES = [];
+
 let db, characters=[], upgrades=[], awakenings={};
-let activeChar=null, cardIndex=0, cardList=[], activeTierFilter='all';
+let activeChar=null;
+let spendTierFilter='all', spendCatFilter='all', spendSearch='', showLocked=false;
+let selectedUpgradeId=null;
 
 async function init() {
   if (SUPABASE_URL==='YOUR_SUPABASE_URL') { hide('loading'); show('config-notice'); return; }
@@ -431,36 +520,33 @@ async function loadAll() {
     if(!awakenings[a.character_id]) awakenings[a.character_id]={};
     awakenings[a.character_id][a.upgrade_id]=a.count;
   }
+  // derive categories from requirements_note
+  const cats=new Set();
+  for(const u of upgrades){ if(u.requirements_note) cats.add(u.requirements_note); }
+  CATEGORIES=Array.from(cats).sort();
 }
 
 const el   = id => document.getElementById(id);
 const show = id => { el(id).style.display='block'; };
 const hide = id => { el(id).style.display='none'; };
-
-function showToast(msg){ const t=el('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+function showToast(msg){ const t=el('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 function scrollTop(){ el('scroll-area').scrollTo({top:0,behavior:'smooth'}); }
 
-function charAw(id)  { return awakenings[id]||{}; }
+function charAw(id)   { return awakenings[id]||{}; }
 function hasTaken(cid,uid){ return (charAw(cid)[uid]||0)>0; }
-function spentPts(id){ const aw=charAw(id); return upgrades.reduce((s,u)=>s+(u.cost*(aw[u.id]||0)),0); }
-function availPts(id){ const c=characters.find(x=>x.id===id); return c?c.points-spentPts(id):0; }
+function spentPts(id) { const aw=charAw(id); return upgrades.reduce((s,u)=>s+(u.cost*(aw[u.id]||0)),0); }
+function availPts(id) { const c=characters.find(x=>x.id===id); return c?c.points-spentPts(id):0; }
 function takenCount(id){ return Object.values(charAw(id)).reduce((s,c)=>s+c,0); }
-function tierInfo(t){ return TIERS.find(x=>x.tier===t); }
 function charLevel(id){ const c=characters.find(x=>x.id===id); return c?c.level:1; }
-function tierUnlocked(charId,tier){ return charLevel(charId)>=(tierInfo(tier)?.minLevel||1); }
-
+function tierUnlocked(cid,t){ return charLevel(cid)>=(TIERS.find(x=>x.tier===t)?.minLevel||1); }
 function canTake(cid,u){
   if(!tierUnlocked(cid,u.tier)) return false;
-  if(!u.repeatable && hasTaken(cid,u.id)) return false;
+  if(!u.repeatable&&hasTaken(cid,u.id)) return false;
   if(availPts(cid)<u.cost) return false;
   return true;
 }
-
+function formatEffect(t){ return t.replace(/(\d+d\d+|\b\d+(?=\s*(?:ft|feet|HP|hit points|SP|minutes?|hours?|days?|rounds?)))/g,'<em>$1</em>'); }
 function tcClass(t){ return 'tc'+t; }
-
-function formatEffect(text){
-  return text.replace(/(\d+d\d+|\b\d+(?=\s*(?:ft|feet|HP|hit points|SP|minutes?|hours?|days?|rounds?)))/g,'<em>$1</em>');
-}
 
 /* ── PARTY ── */
 function renderParty(){
@@ -518,9 +604,10 @@ async function goToChar(charId){
   if(pts>0){ el('char-pts-row').style.display='flex'; el('char-pts-num').textContent=pts; }
   else el('char-pts-row').style.display='none';
 
-  const setAwBtn=(btn,haspts)=>{ if(haspts){btn.classList.add('pulsing');btn.disabled=false;}else{btn.classList.remove('pulsing');btn.disabled=true;} };
-  setAwBtn(el('awaken-btn'), pts>0);
-  setAwBtn(el('awaken-btn-tree'), pts>0);
+  [el('awaken-btn'),el('awaken-btn-tree')].forEach(b=>{
+    if(pts>0){b.classList.add('pulsing');b.disabled=false;}
+    else{b.classList.remove('pulsing');b.disabled=true;}
+  });
 
   switchView('taken');
   hide('party-view'); hide('spend-view');
@@ -555,66 +642,36 @@ function renderTaken(){
 function renderTree(){
   const container=el('tree-view'); container.innerHTML='';
   const char=characters.find(c=>c.id===activeChar);
-
   for(const t of TIERS){
     const unlocked=char&&char.level>=t.minLevel;
     const tierUps=upgrades.filter(u=>u.tier===t.tier);
     const standard=tierUps.filter(u=>!u.repeatable);
     const limited=tierUps.filter(u=>u.repeatable);
-
-    const block=document.createElement('div');
-    block.className=`tier-block tier-${t.tier}`;
-
-    const hdr=document.createElement('div');
-    hdr.className='tier-header';
+    const block=document.createElement('div'); block.className=`tier-block tier-${t.tier}`;
+    const hdr=document.createElement('div'); hdr.className='tier-header';
     hdr.innerHTML=`<div class="tier-pip"></div>
       <div class="tier-name">${t.label} &nbsp;·&nbsp; Awakenings</div>
       <div class="tier-level-req">Lv ${t.minLevel}+</div>
       ${!unlocked?'<div class="tier-lock-icon">🔒</div>':''}
       <div class="tier-chevron${unlocked?' open':''}" id="chev-t${t.tier}">▼</div>`;
-
-    const content=document.createElement('div');
-    content.className='tier-content'+(unlocked?' open':'');
-    content.id=`tc-${t.tier}`;
-
-    hdr.onclick=()=>{
-      const open=content.classList.contains('open');
-      content.classList.toggle('open',!open);
-      document.getElementById(`chev-t${t.tier}`).classList.toggle('open',!open);
-    };
-
+    const content=document.createElement('div'); content.className='tier-content'+(unlocked?' open':''); content.id=`tc-${t.tier}`;
+    hdr.onclick=()=>{ const open=content.classList.contains('open'); content.classList.toggle('open',!open); document.getElementById(`chev-t${t.tier}`).classList.toggle('open',!open); };
     if(!unlocked){
-      const banner=document.createElement('div');
-      banner.className='tier-locked-banner';
-      banner.textContent=`This tier awakens at level ${t.minLevel}`;
-      content.appendChild(banner);
+      const banner=document.createElement('div'); banner.className='tier-locked-banner'; banner.textContent=`This tier awakens at level ${t.minLevel}`; content.appendChild(banner);
     } else {
-      if(standard.length){
-        const grid=document.createElement('div'); grid.className='tree-grid';
-        for(const u of standard) grid.appendChild(makeTreeCard(u,char));
-        content.appendChild(grid);
-      }
+      if(standard.length){ const grid=document.createElement('div'); grid.className='tree-grid'; for(const u of standard) grid.appendChild(makeTreeCard(u,char)); content.appendChild(grid); }
       if(limited.length){
-        const lbl=document.createElement('div'); lbl.className='tree-section-label'; lbl.textContent='Repeatable Awakenings';
-        content.appendChild(lbl);
-        const grid=document.createElement('div'); grid.className='tree-grid';
-        for(const u of limited) grid.appendChild(makeTreeCard(u,char));
-        content.appendChild(grid);
+        const lbl=document.createElement('div'); lbl.className='tree-section-label'; lbl.textContent='Repeatable Awakenings'; content.appendChild(lbl);
+        const grid=document.createElement('div'); grid.className='tree-grid'; for(const u of limited) grid.appendChild(makeTreeCard(u,char)); content.appendChild(grid);
       }
     }
-
-    block.appendChild(hdr);
-    block.appendChild(content);
-    container.appendChild(block);
+    block.appendChild(hdr); block.appendChild(content); container.appendChild(block);
   }
 }
 
 function makeTreeCard(u,char){
-  const aw=charAw(activeChar);
-  const taken=hasTaken(activeChar,u.id);
-  const count=aw[u.id]||0;
-  const available=char&&char.level>=(tierInfo(u.tier)?.minLevel||1);
-
+  const aw=charAw(activeChar), taken=hasTaken(activeChar,u.id), count=aw[u.id]||0;
+  const available=char&&char.level>=(TIERS.find(t=>t.tier===u.tier)?.minLevel||1);
   const card=document.createElement('div');
   card.className='tree-card tier-'+u.tier+(taken?' taken':'')+((!available&&!taken)?' unavailable':'');
   card.innerHTML=`
@@ -636,92 +693,181 @@ function goToParty(){
   scrollTop();
 }
 
-/* ── SPEND ── */
-function buildCardList(){
-  const char=characters.find(c=>c.id===activeChar);
-  let pool=upgrades.filter(u=>{
-    if(activeTierFilter!=='all'&&u.tier!==activeTierFilter) return false;
-    if(!char||char.level<(tierInfo(u.tier)?.minLevel||1)) return false;
-    if(!u.repeatable&&hasTaken(activeChar,u.id)) return false;
-    return true;
-  });
-  const avail=pool.filter(u=>canTake(activeChar,u));
-  const locked=pool.filter(u=>!canTake(activeChar,u));
-  cardList=[...avail,...locked];
+/* ════════════════════════
+   SPEND — GRID BROWSE
+════════════════════════ */
+function goToSpend(){
+  if(!activeChar) return;
+  spendTierFilter='all'; spendCatFilter='all'; spendSearch=''; showLocked=false; selectedUpgradeId=null;
+  el('spend-search').value='';
+  el('spend-back').onclick=()=>goToChar();
+  buildSpendFilters();
+  renderSpendGrid();
+  updateConfirmBar();
+  el('spend-pts').textContent=`${availPts(activeChar)} SP`;
+  hide('char-view'); el('spend-view').style.display='block';
+  scrollTop();
 }
 
-function buildTierFilters(){
+function buildSpendFilters(){
   const char=characters.find(c=>c.id===activeChar);
-  const wrap=el('tier-filters'); wrap.innerHTML='';
-  const mk=(label,val,cls)=>{
+  const wrap=el('spend-filters'); wrap.innerHTML='';
+
+  // tier pills
+  const mkTier=(label,val,cls)=>{
     const b=document.createElement('button');
-    b.className=`tier-filter${activeTierFilter===val?' active '+cls:''}`;
-    b.textContent=label; b.onclick=()=>setTierFilter(val);
+    b.className=`spend-filter${spendTierFilter===val?' active '+(cls||''):''}`;
+    b.textContent=label; b.onclick=()=>{ spendTierFilter=val; selectedUpgradeId=null; buildSpendFilters(); renderSpendGrid(); updateConfirmBar(); };
     wrap.appendChild(b);
   };
-  mk('All','all','tf-all');
+  mkTier('All Tiers','all','');
   for(const t of TIERS){
     if(!char||char.level<t.minLevel) continue;
-    mk(t.label, t.tier, 'tf-'+t.tier);
+    mkTier(t.label, t.tier, 'tf-'+t.tier);
+  }
+
+  // divider
+  if(CATEGORIES.length){
+    const div=document.createElement('div'); div.className='divider-line'; wrap.appendChild(div);
+
+    // category pills
+    const mkCat=(label,val)=>{
+      const b=document.createElement('button');
+      b.className=`spend-filter${spendCatFilter===val?' active':''}`;
+      b.textContent=label; b.onclick=()=>{ spendCatFilter=val; selectedUpgradeId=null; buildSpendFilters(); renderSpendGrid(); updateConfirmBar(); };
+      wrap.appendChild(b);
+    };
+    mkCat('All Classes','all');
+    for(const cat of CATEGORIES) mkCat(cat, cat);
   }
 }
 
-function setTierFilter(val){ activeTierFilter=val; buildCardList(); buildTierFilters(); cardIndex=0; renderCard('right'); }
+function getFilteredUpgrades(){
+  const char=characters.find(c=>c.id===activeChar);
+  const search=spendSearch.toLowerCase().trim();
 
-function goToSpend(){
-  if(!activeChar) return;
-  activeTierFilter='all'; buildCardList();
-  if(!cardList.length){ showToast('No awakenings available'); return; }
-  cardIndex=0; buildTierFilters();
-  el('spend-back').onclick=()=>goToChar();
-  hide('char-view'); el('spend-view').style.display='block';
-  renderCard('right'); scrollTop();
+  return upgrades.filter(u=>{
+    // tier filter
+    if(spendTierFilter!=='all'&&u.tier!==spendTierFilter) return false;
+    // must be unlocked by level
+    if(!char||char.level<(TIERS.find(t=>t.tier===u.tier)?.minLevel||1)) return false;
+    // already taken non-repeatable
+    if(!u.repeatable&&hasTaken(activeChar,u.id)) return false;
+    // category/requirement filter
+    if(spendCatFilter!=='all'){
+      if(!u.requirements_note||u.requirements_note!==spendCatFilter) return false;
+    }
+    // search
+    if(search){
+      const haystack=(u.name+' '+u.effect+(u.requirements_note||'')).toLowerCase();
+      if(!haystack.includes(search)) return false;
+    }
+    return true;
+  });
 }
 
-function navigateCard(dir){
-  const n=cardIndex+dir;
-  if(n<0||n>=cardList.length) return;
-  cardIndex=n; renderCard(dir>0?'right':'left');
+function renderSpendGrid(){
+  const grid=el('spend-grid'); grid.innerHTML=''; hide('no-results');
+  const all=getFilteredUpgrades();
+  const available=all.filter(u=>canTake(activeChar,u));
+  const locked=all.filter(u=>!canTake(activeChar,u));
+
+  const display=showLocked?all:available;
+
+  // update toggle button
+  el('toggle-locked-btn').textContent=showLocked
+    ? `Hide locked (${locked.length})`
+    : locked.length>0 ? `Show locked (${locked.length})` : '';
+
+  el('spend-results-count').textContent=`${available.length} available · ${all.length} total`;
+
+  if(display.length===0){
+    show('no-results');
+    el('no-results').textContent=available.length===0&&!showLocked
+      ? 'No awakenings available — try showing locked options.'
+      : 'No awakenings match your filters.';
+    return;
+  }
+
+  for(const u of display){
+    const isLocked=!canTake(activeChar,u);
+    const isSelected=u.id===selectedUpgradeId;
+    const levelOk=tierUnlocked(activeChar,u.tier);
+
+    let lockBadge='';
+    if(!levelOk) lockBadge=`<span class="sg-badge sgb-lock">Lv ${TIERS.find(t=>t.tier===u.tier)?.minLevel} required</span>`;
+    else if(availPts(activeChar)<u.cost) lockBadge=`<span class="sg-badge sgb-nopt">Need ${u.cost} SP</span>`;
+
+    const card=document.createElement('div');
+    card.className=`sg-card ${tcClass(u.tier)}${isLocked?' sg-locked':''}${isSelected?' selected':''}`;
+    card.innerHTML=`
+      <div class="sg-card-top">
+        <div class="sg-name">${u.name}</div>
+        <div class="sg-cost${isLocked?' locked-cost':''}">${u.cost}</div>
+      </div>
+      <div class="sg-badges">
+        <span class="sg-badge sgb-tier">${TIERS.find(t=>t.tier===u.tier)?.label}</span>
+        ${u.repeatable?'<span class="sg-badge sgb-repeat">Repeatable</span>':''}
+        ${u.requirements_note?`<span class="sg-badge sgb-req">${u.requirements_note}</span>`:''}
+        ${lockBadge}
+      </div>
+      <div class="sg-effect">${formatEffect(u.effect)}</div>`;
+
+    if(!isLocked){
+      card.onclick=()=>selectUpgrade(u.id);
+    }
+    grid.appendChild(card);
+  }
 }
 
-function renderCard(dir){
-  if(!cardList.length) return;
-  const u=cardList[cardIndex];
-  const locked=!canTake(activeChar,u);
-  const t=tierInfo(u.tier);
-  const levelOk=tierUnlocked(activeChar,u.tier);
+function selectUpgrade(uid){
+  selectedUpgradeId=uid===selectedUpgradeId?null:uid;
+  // re-render cards to update selected state without full rebuild
+  const grid=el('spend-grid');
+  grid.querySelectorAll('.sg-card').forEach(c=>{
+    const isNowSelected=c.querySelector('.sg-name')&&
+      upgrades.find(u=>u.id===selectedUpgradeId)?.name===c.querySelector('.sg-name').textContent;
+    // simpler: just re-render
+  });
+  renderSpendGrid();
+  updateConfirmBar();
+}
 
-  el('spend-counter').textContent=`${cardIndex+1} / ${cardList.length}`;
-  el('nav-prev').disabled=cardIndex===0;
-  el('nav-next').disabled=cardIndex===cardList.length-1;
+function updateConfirmBar(){
+  const sel=el('confirm-selected'), btn=el('confirm-btn');
+  if(!selectedUpgradeId){
+    sel.innerHTML='<div class="confirm-selected-none">Select an awakening above</div>';
+    btn.disabled=true; return;
+  }
+  const u=upgrades.find(x=>x.id===selectedUpgradeId);
+  if(!u||!canTake(activeChar,u)){
+    sel.innerHTML='<div class="confirm-selected-none">Select an awakening above</div>';
+    btn.disabled=true; return;
+  }
+  sel.innerHTML=`<div class="confirm-selected-name">${u.name}</div><div class="confirm-selected-effect">${u.effect}</div>`;
+  btn.disabled=false;
+}
 
-  let lockBadge='';
-  if(!levelOk) lockBadge=`<span class="badge b-locked-lvl">Requires Level ${t.minLevel}</span>`;
-  else if(availPts(activeChar)<u.cost) lockBadge=`<span class="badge b-no-pts">Need ${u.cost} SP</span>`;
+function onSearch(){
+  spendSearch=el('spend-search').value;
+  selectedUpgradeId=null;
+  renderSpendGrid();
+  updateConfirmBar();
+}
 
-  const cardEl=el('upgrade-card-el');
-  cardEl.className=`upgrade-card ${tcClass(u.tier)}${locked?' locked':''} ${dir==='right'?'anim-r':'anim-l'}`;
-  cardEl.innerHTML=`
-    <div class="up-tier-label ${tcClass(u.tier)}">${t.label} &nbsp;·&nbsp; Level ${t.minLevel}+</div>
-    <div class="up-name">${u.name}</div>
-    <div class="up-badges">
-      <span class="badge b-cost">${u.cost} SP</span>
-      ${u.repeatable?'<span class="badge b-repeat">Repeatable</span>':''}
-      ${u.requirements_note?`<span class="badge b-req">${u.requirements_note}</span>`:''}
-      ${lockBadge}
-    </div>
-    <div class="up-rule"></div>
-    <div class="up-effect">${formatEffect(u.effect)}</div>`;
-
-  const btn=el('confirm-btn');
-  btn.disabled=locked;
-  btn.textContent=locked?(!levelOk?'✦  Locked — Level Required':'✦  Not Enough SP'):'✦  Awaken This Gift';
+function toggleShowLocked(){
+  showLocked=!showLocked;
+  selectedUpgradeId=null;
+  renderSpendGrid();
+  updateConfirmBar();
 }
 
 async function confirmAwakening(){
-  if(!activeChar||!cardList.length) return;
-  const u=cardList[cardIndex]; if(!canTake(activeChar,u)) return;
+  if(!activeChar||!selectedUpgradeId) return;
+  const u=upgrades.find(x=>x.id===selectedUpgradeId);
+  if(!u||!canTake(activeChar,u)) return;
   const btn=el('confirm-btn'); btn.disabled=true; btn.textContent='✦  Awakening…';
+
   const existing=awakenings[activeChar]?.[u.id]||0;
   let error;
   if(existing>0&&u.repeatable){
@@ -729,17 +875,23 @@ async function confirmAwakening(){
   } else {
     ({error}=await db.from('character_awakenings').insert({character_id:activeChar,upgrade_id:u.id,count:1}));
   }
-  if(error){ showToast('Something went wrong'); btn.disabled=false; btn.textContent='✦  Awaken This Gift'; return; }
+  if(error){ showToast('Something went wrong'); btn.disabled=false; btn.textContent='✦  Awaken'; return; }
+
   if(!awakenings[activeChar]) awakenings[activeChar]={};
   awakenings[activeChar][u.id]=(awakenings[activeChar][u.id]||0)+1;
-  showToast(`${u.name} awakened`);
-  if(availPts(activeChar)<=0){ setTimeout(()=>goToChar(),800); return; }
-  buildCardList();
-  if(!cardList.length){ setTimeout(()=>goToChar(),800); return; }
-  cardIndex=Math.min(cardIndex,cardList.length-1);
-  renderCard('right'); buildTierFilters();
+  showToast(`${u.name} awakened ✦`);
+  btn.textContent='✦  Awaken';
+  selectedUpgradeId=null;
+
+  const newPts=availPts(activeChar);
+  el('spend-pts').textContent=`${newPts} SP`;
+
+  if(newPts<=0){ setTimeout(()=>goToChar(),900); return; }
+  renderSpendGrid();
+  updateConfirmBar();
 }
 
+/* ── IMAGE UPLOAD ── */
 async function handleImageUpload(event){
   const file=event.target.files[0]; if(!file||!activeChar) return;
   el('upload-status').textContent='Uploading…';
