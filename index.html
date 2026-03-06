@@ -366,7 +366,6 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 const SUPABASE_URL      = 'https://esanxehwfmiktwmxzzrv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_MOlcKwFGCBaXhMtKiDOafw_wWHdvsl-';
 
-
 const TIERS=[{tier:1,label:'Tier I',minLevel:1},{tier:2,label:'Tier II',minLevel:5},{tier:3,label:'Tier III',minLevel:10},{tier:4,label:'Tier IV',minLevel:15}];
 let CATEGORIES=[];
 let db,characters=[],upgrades=[],awakenings={};
@@ -400,7 +399,7 @@ function availPts(id){const c=characters.find(x=>x.id===id);return c?c.points-sp
 function takenCount(id){return Object.values(charAw(id)).reduce((s,c)=>s+c,0);}
 function charLevel(id){const c=characters.find(x=>x.id===id);return c?c.level:1;}
 function tierUnlocked(cid,t){return charLevel(cid)>=(TIERS.find(x=>x.tier===t)?.minLevel||1);}
-function canTake(cid,u){if(!tierUnlocked(cid,u.tier))return false;if(!u.repeatable&&hasTaken(cid,u.id))return false;if(availPts(cid)<u.cost)return false;return true;}
+function canTake(cid,u){if(!tierUnlocked(cid,u.tier))return false;if(hasTaken(cid,u.id))return false;if(availPts(cid)<u.cost)return false;return true;}
 function formatEffect(t){return t.replace(/(\d+d\d+|\b\d+(?=\s*(?:ft|feet|HP|hit points|SP|minutes?|hours?|days?|rounds?)))/g,'<em>$1</em>');}
 function tcClass(t){return 'tc'+t;}
 
@@ -461,7 +460,6 @@ function renderTaken(){
         <div class="taken-name">${u.name} <span style="font-size:var(--fs-xs);color:var(--text-faint);font-family:'Cinzel',serif;letter-spacing:2px;margin-left:6px;">T${u.tier}</span></div>
         <div class="taken-effect">${u.effect}</div>
       </div>
-      ${count>1?`<div class="taken-count">×${count}</div>`:''}
       <div class="taken-actions" id="actions-${u.id}">
         <button class="remove-btn" onclick="promptRemove('${u.id}')">Remove</button>
         <div class="remove-refund">+${u.cost} SP refund</div>
@@ -494,17 +492,11 @@ async function removeAwakening(uid){
   const u=upgrades.find(x=>x.id===uid);if(!u||!activeChar)return;
   const actionsEl=el(`actions-${uid}`);
   actionsEl.innerHTML=`<span style="font-family:'Cinzel',serif;font-size:var(--fs-xs);color:var(--text-faint);letter-spacing:2px;">Removing…</span>`;
-  const count=(awakenings[activeChar]?.[uid]||0);
   let error;
-  if(count>1){
-    ({error}=await db.from('character_awakenings').update({count:count-1}).eq('character_id',activeChar).eq('upgrade_id',uid));
-  } else {
-    ({error}=await db.from('character_awakenings').delete().eq('character_id',activeChar).eq('upgrade_id',uid));
-  }
+  ({error}=await db.from('character_awakenings').delete().eq('character_id',activeChar).eq('upgrade_id',uid));
   if(error){showToast('Something went wrong');renderTaken();return;}
   if(!awakenings[activeChar])awakenings[activeChar]={};
-  if(count<=1)delete awakenings[activeChar][uid];
-  else awakenings[activeChar][uid]=count-1;
+  delete awakenings[activeChar][uid];
   showToast(`${u.name} removed · ${u.cost} SP refunded`);
   // refresh pts display
   const pts=availPts(activeChar);
@@ -532,7 +524,7 @@ function renderTree(){
     if(!unlocked){const banner=document.createElement('div');banner.className='tier-locked-banner';banner.textContent=`This tier awakens at level ${t.minLevel}`;content.appendChild(banner);}
     else{
       if(standard.length){const grid=document.createElement('div');grid.className='tree-grid';for(const u of standard)grid.appendChild(makeTreeCard(u,char));content.appendChild(grid);}
-      if(limited.length){const lbl=document.createElement('div');lbl.className='tree-section-label';lbl.textContent='Repeatable Awakenings';content.appendChild(lbl);const grid=document.createElement('div');grid.className='tree-grid';for(const u of limited)grid.appendChild(makeTreeCard(u,char));content.appendChild(grid);}
+      if(limited.length){const lbl=document.createElement('div');lbl.className='tree-section-label';lbl.textContent='Limited Use Awakenings';content.appendChild(lbl);const grid=document.createElement('div');grid.className='tree-grid';for(const u of limited)grid.appendChild(makeTreeCard(u,char));content.appendChild(grid);}
     }
     block.appendChild(hdr);block.appendChild(content);container.appendChild(block);
   }
@@ -543,7 +535,7 @@ function makeTreeCard(u,char){
   const available=char&&char.level>=(TIERS.find(t=>t.tier===u.tier)?.minLevel||1);
   const card=document.createElement('div');
   card.className='tree-card tier-'+u.tier+(taken?' taken':'')+((!available&&!taken)?' unavailable':'');
-  card.innerHTML=`<div class="tree-card-name">${u.name}</div><div class="tree-card-meta"><span class="tree-badge tb-cost">${u.cost} SP</span>${u.repeatable?'<span class="tree-badge tb-repeat">Repeatable</span>':''}${taken?`<span class="tree-badge tb-taken">✦ ${count>1?'×'+count:'Attuned'}</span>`:''}${u.requirements_note?`<span class="tree-badge tb-req">${u.requirements_note}</span>`:''}</div><div class="tree-card-effect">${u.effect}</div>`;
+  card.innerHTML=`<div class="tree-card-name">${u.name}</div><div class="tree-card-meta"><span class="tree-badge tb-cost">${u.cost} SP</span>${u.repeatable?'<span class="tree-badge tb-repeat">Limited</span>':''}${taken?`<span class="tree-badge tb-taken">✦ Attuned</span>`:''}${u.requirements_note?`<span class="tree-badge tb-req">${u.requirements_note}</span>`:''}</div><div class="tree-card-effect">${u.effect}</div>`;
   return card;
 }
 
@@ -575,7 +567,7 @@ function getFilteredUpgrades(){
   return upgrades.filter(u=>{
     if(spendTierFilter!=='all'&&u.tier!==spendTierFilter)return false;
     if(!char||char.level<(TIERS.find(t=>t.tier===u.tier)?.minLevel||1))return false;
-    if(!u.repeatable&&hasTaken(activeChar,u.id))return false;
+    if(hasTaken(activeChar,u.id))return false;
     if(spendCatFilter!=='all'){if(!u.requirements_note||u.requirements_note!==spendCatFilter)return false;}
     if(search){const hay=(u.name+' '+u.effect+(u.requirements_note||'')).toLowerCase();if(!hay.includes(search))return false;}
     return true;
@@ -598,7 +590,7 @@ function renderSpendGrid(){
     else if(availPts(activeChar)<u.cost)lockBadge=`<span class="sg-badge sgb-nopt">Need ${u.cost} SP</span>`;
     const card=document.createElement('div');
     card.className=`sg-card ${tcClass(u.tier)}${isLocked?' sg-locked':''}${isSelected?' selected':''}`;
-    card.innerHTML=`<div class="sg-card-top"><div class="sg-name">${u.name}</div><div class="sg-cost${isLocked?' locked-cost':''}">${u.cost}</div></div><div class="sg-badges"><span class="sg-badge sgb-tier">${TIERS.find(t=>t.tier===u.tier)?.label}</span>${u.repeatable?'<span class="sg-badge sgb-repeat">Repeatable</span>':''}${u.requirements_note?`<span class="sg-badge sgb-req">${u.requirements_note}</span>`:''}${lockBadge}</div><div class="sg-effect">${formatEffect(u.effect)}</div>`;
+    card.innerHTML=`<div class="sg-card-top"><div class="sg-name">${u.name}</div><div class="sg-cost${isLocked?' locked-cost':''}">${u.cost}</div></div><div class="sg-badges"><span class="sg-badge sgb-tier">${TIERS.find(t=>t.tier===u.tier)?.label}</span>${u.repeatable?'<span class="sg-badge sgb-repeat">Limited</span>':''}${u.requirements_note?`<span class="sg-badge sgb-req">${u.requirements_note}</span>`:''}${lockBadge}</div><div class="sg-effect">${formatEffect(u.effect)}</div>`;
     if(!isLocked)card.onclick=()=>selectUpgrade(u.id);
     grid.appendChild(card);
   }
@@ -623,8 +615,7 @@ async function confirmAwakening(){
   const u=upgrades.find(x=>x.id===selectedUpgradeId);if(!u||!canTake(activeChar,u))return;
   const btn=el('confirm-btn');btn.disabled=true;btn.textContent='✦  Awakening…';
   const existing=awakenings[activeChar]?.[u.id]||0;let error;
-  if(existing>0&&u.repeatable){({error}=await db.from('character_awakenings').update({count:existing+1}).eq('character_id',activeChar).eq('upgrade_id',u.id));}
-  else{({error}=await db.from('character_awakenings').insert({character_id:activeChar,upgrade_id:u.id,count:1}));}
+  ({error}=await db.from('character_awakenings').insert({character_id:activeChar,upgrade_id:u.id,count:1}));
   if(error){showToast('Something went wrong');btn.disabled=false;btn.textContent='✦  Awaken';return;}
   if(!awakenings[activeChar])awakenings[activeChar]={};
   awakenings[activeChar][u.id]=(awakenings[activeChar][u.id]||0)+1;
