@@ -277,6 +277,23 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 .party-tab.dm-tab:hover{color:var(--purple);}
 .party-tab.dm-tab.active{color:var(--purple);border-bottom-color:var(--purple);}
 
+/* PIN OVERLAY */
+.pin-overlay{position:absolute;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
+.pin-overlay.hidden{display:none;}
+.pin-title{font-family:'Cinzel',serif;font-size:var(--fs-sm);letter-spacing:5px;text-transform:uppercase;color:var(--purple);margin-bottom:4px;}
+.pin-sub{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;color:var(--text-faint);}
+.pin-dots{display:flex;gap:14px;margin:4px 0;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--crack-lit);background:transparent;transition:all .2s;}
+.pin-dot.filled{border-color:var(--purple);background:var(--purple);box-shadow:0 0 10px rgba(212,168,248,.5);}
+.pin-dot.error{border-color:var(--red);background:var(--red);animation:pin-shake .3s ease;}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:220px;}
+.pin-key{padding:14px 10px;background:var(--stone);border:1px solid var(--crack);color:var(--text);font-family:'Cinzel',serif;font-size:var(--fs-md);cursor:pointer;transition:all .2s;text-align:center;}
+.pin-key:hover{border-color:var(--purple-dim);color:var(--purple);background:rgba(212,168,248,.06);}
+.pin-key:active{transform:scale(.95);}
+.pin-key.pin-clear{font-size:var(--fs-xs);letter-spacing:2px;color:var(--text-faint);}
+.pin-error-msg{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;color:var(--red);min-height:18px;}
+@keyframes pin-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
 /* DM PANEL */
 #dm-view{display:none;}
 .dm-inner{max-width:var(--max-w);margin:0 auto;padding:24px 20px 40px;}
@@ -285,30 +302,33 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 .dm-section-title{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
 .dm-section-title::before{content:'✦';color:var(--ember-dim);}
 .dm-section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--crack),transparent);}
-.dm-char-list{display:flex;flex-direction:column;gap:10px;}
-.dm-char-card{background:var(--stone);border:1px solid var(--crack);padding:14px 18px;}
-.dm-char-card-top{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
-.dm-char-avatar{width:38px;height:38px;border-radius:2px;background:var(--stone2);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;color:var(--ember);}
+.dm-char-list{display:flex;flex-direction:column;gap:12px;}
+.dm-char-card{background:var(--stone);border:1px solid var(--crack);padding:16px 18px;}
+.dm-char-card-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.dm-char-avatar{width:42px;height:42px;border-radius:2px;background:var(--stone2);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;color:var(--ember);}
 .dm-char-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:saturate(.6) brightness(.7);}
-.dm-char-info{flex:1;}
-.dm-char-name{font-family:'Cinzel',serif;font-size:var(--fs-base);color:var(--white-heat);margin-bottom:2px;}
-.dm-char-sub{font-size:var(--fs-sm);color:var(--text-dim);font-style:italic;}
-.dm-char-stats{display:flex;gap:16px;flex-wrap:wrap;}
+.dm-char-info{flex:1;min-width:0;}
+.dm-char-name{font-family:'Cinzel',serif;font-size:var(--fs-base);color:var(--white-heat);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dm-char-sub{font-size:var(--fs-sm);color:var(--text-dim);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dm-char-stats{display:flex;gap:12px;flex-wrap:wrap;}
 .dm-stat{font-family:'Cinzel',serif;font-size:var(--fs-xs);color:var(--text-faint);letter-spacing:2px;}
 .dm-stat span{color:var(--flame);margin-left:4px;}
-.dm-char-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.dm-control-group{display:flex;align-items:center;gap:6px;background:var(--stone2);border:1px solid var(--crack);padding:6px 10px;}
-.dm-control-label{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;}
-.dm-stepper{display:flex;align-items:center;gap:4px;}
-.dm-step-btn{width:28px;height:28px;background:none;border:1px solid var(--crack-lit);color:var(--text-dim);font-size:16px;line-height:1;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+/* controls: stack vertically on mobile */
+.dm-char-controls{display:flex;flex-direction:column;gap:8px;}
+.dm-control-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.dm-control-group{display:flex;align-items:center;gap:8px;background:var(--stone2);border:1px solid var(--crack);padding:8px 12px;flex:1;min-width:0;}
+.dm-control-label{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;flex-shrink:0;}
+.dm-stepper{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.dm-step-btn{width:32px;height:32px;background:none;border:1px solid var(--crack-lit);color:var(--text-dim);font-size:18px;line-height:1;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .dm-step-btn:hover{border-color:var(--ember-dim);color:var(--ember);}
-.dm-step-val{font-family:'Cinzel Decorative',serif;font-size:var(--fs-md);color:var(--flame);min-width:32px;text-align:center;}
-.dm-sp-input{width:60px;background:var(--stone);border:1px solid var(--crack-lit);color:var(--flame);font-family:'Cinzel Decorative',serif;font-size:var(--fs-md);padding:3px 6px;text-align:center;outline:none;}
+.dm-step-val{font-family:'Cinzel Decorative',serif;font-size:var(--fs-lg);color:var(--flame);min-width:36px;text-align:center;}
+.dm-sp-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.dm-sp-input{width:70px;background:var(--stone);border:1px solid var(--crack-lit);color:var(--flame);font-family:'Cinzel Decorative',serif;font-size:var(--fs-lg);padding:4px 8px;text-align:center;outline:none;flex-shrink:0;}
 .dm-sp-input:focus{border-color:var(--ember-dim);}
-.dm-apply-btn{padding:7px 14px;background:rgba(232,144,42,.1);border:1px solid var(--ember-dim);color:var(--ember);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.dm-apply-btn:hover{background:rgba(232,144,42,.2);}
-.dm-deduct-btn{padding:7px 14px;background:rgba(180,60,40,.1);border:1px solid var(--red);color:var(--red);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.dm-deduct-btn:hover{background:rgba(180,60,40,.2);}
+.dm-apply-btn{flex:1;padding:9px 12px;background:rgba(232,144,42,.1);border:1px solid var(--ember-dim);color:var(--ember);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;min-width:80px;}
+.dm-apply-btn:hover{background:rgba(232,144,42,.22);}
+.dm-deduct-btn{flex:1;padding:9px 12px;background:rgba(180,60,40,.1);border:1px solid var(--red);color:var(--red);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;min-width:80px;}
+.dm-deduct-btn:hover{background:rgba(180,60,40,.22);}
 
 /* ADD CHARACTER FORM */
 .dm-add-form{background:var(--stone);border:1px solid var(--crack);padding:20px 22px;}
@@ -316,20 +336,22 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 @media(max-width:480px){.dm-form-grid{grid-template-columns:1fr;}}
 .dm-field{display:flex;flex-direction:column;gap:5px;}
 .dm-field label{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);}
-.dm-field input,.dm-field select{background:var(--stone2);border:1px solid var(--crack-lit);color:var(--text);font-family:'Crimson Pro',serif;font-size:var(--fs-base);padding:8px 12px;outline:none;transition:border-color .2s;width:100%;}
+.dm-field input,.dm-field select{background:var(--stone2);border:1px solid var(--crack-lit);color:var(--text);font-family:'Crimson Pro',serif;font-size:var(--fs-base);padding:9px 12px;outline:none;transition:border-color .2s;width:100%;}
 .dm-field input:focus,.dm-field select:focus{border-color:var(--ember-dim);}
 .dm-field select option{background:var(--stone2);}
-.dm-submit{width:100%;padding:13px;background:linear-gradient(135deg,rgba(212,168,248,.1),rgba(106,64,128,.05));border:1px solid var(--purple-dim);color:var(--purple);font-family:'Cinzel',serif;font-size:var(--fs-sm);letter-spacing:4px;text-transform:uppercase;cursor:pointer;transition:all .25s;}
+.dm-submit{width:100%;padding:14px;background:linear-gradient(135deg,rgba(212,168,248,.1),rgba(106,64,128,.05));border:1px solid var(--purple-dim);color:var(--purple);font-family:'Cinzel',serif;font-size:var(--fs-sm);letter-spacing:4px;text-transform:uppercase;cursor:pointer;transition:all .25s;}
 .dm-submit:hover{background:rgba(212,168,248,.15);box-shadow:0 0 22px rgba(212,168,248,.15);}
 
-/* HEIRLOOM RENAME */
-.heirloom-rename-wrap{display:flex;align-items:center;gap:8px;margin-top:4px;}
-.heirloom-rename-btn{background:none;border:none;color:var(--ember-dim);font-size:13px;cursor:pointer;padding:2px 4px;transition:color .2s;line-height:1;}
+/* HEIRLOOM RENAME — pencil vertically aligned with text */
+.heirloom-rename-wrap{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+.char-heirloom-title{font-size:var(--fs-md);font-style:italic;color:var(--ember);line-height:1.2;}
+.heirloom-rename-btn{background:none;border:none;color:var(--ember-dim);font-size:var(--fs-base);cursor:pointer;padding:0 3px;transition:color .2s;line-height:1;display:flex;align-items:center;}
 .heirloom-rename-btn:hover{color:var(--ember);}
-.heirloom-rename-input{font-family:'Crimson Pro',serif;font-size:var(--fs-md);font-style:italic;color:var(--ember);background:transparent;border:none;border-bottom:1px solid var(--ember-dim);outline:none;padding:2px 4px;width:200px;}
+.heirloom-rename-input{font-family:'Crimson Pro',serif;font-size:var(--fs-md);font-style:italic;color:var(--ember);background:transparent;border:none;border-bottom:1px solid var(--ember-dim);outline:none;padding:2px 4px;min-width:0;flex:1;}
 .heirloom-rename-input:focus{border-bottom-color:var(--ember);}
-.heirloom-save-btn{background:none;border:1px solid var(--ember-dim);color:var(--ember);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:2px;text-transform:uppercase;padding:3px 10px;cursor:pointer;transition:all .2s;}
+.heirloom-save-btn{background:none;border:1px solid var(--ember-dim);color:var(--ember);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:2px;text-transform:uppercase;padding:4px 10px;cursor:pointer;transition:all .2s;flex-shrink:0;}
 .heirloom-save-btn:hover{background:rgba(232,144,42,.1);}
+#heirloom-edit-row{display:none;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
 
 /* TREE CARD CLICKABLE */
 .tree-card.available{cursor:pointer;}
@@ -364,7 +386,33 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
     </div>
     <div id="party-tab-content"><div class="party-inner"><div class="party-grid" id="party-grid"></div></div></div>
     <div id="dm-tab-content" style="display:none">
-      <div id="dm-view" style="display:block">
+      <!-- PIN GATE -->
+      <div class="pin-overlay" id="pin-overlay">
+        <div class="pin-title">DM Access</div>
+        <div class="pin-sub">Enter PIN to continue</div>
+        <div class="pin-dots" id="pin-dots">
+          <div class="pin-dot" id="pd0"></div>
+          <div class="pin-dot" id="pd1"></div>
+          <div class="pin-dot" id="pd2"></div>
+          <div class="pin-dot" id="pd3"></div>
+        </div>
+        <div class="pin-error-msg" id="pin-error"></div>
+        <div class="pin-pad">
+          <button class="pin-key" onclick="pinKey('1')">1</button>
+          <button class="pin-key" onclick="pinKey('2')">2</button>
+          <button class="pin-key" onclick="pinKey('3')">3</button>
+          <button class="pin-key" onclick="pinKey('4')">4</button>
+          <button class="pin-key" onclick="pinKey('5')">5</button>
+          <button class="pin-key" onclick="pinKey('6')">6</button>
+          <button class="pin-key" onclick="pinKey('7')">7</button>
+          <button class="pin-key" onclick="pinKey('8')">8</button>
+          <button class="pin-key" onclick="pinKey('9')">9</button>
+          <button class="pin-key pin-clear" onclick="pinClear()">Clear</button>
+          <button class="pin-key" onclick="pinKey('0')">0</button>
+          <button class="pin-key pin-clear" onclick="pinBackspace()">⌫</button>
+        </div>
+      </div>
+      <div id="dm-view" style="display:none">
         <div class="dm-inner">
           <div class="dm-section">
             <div class="dm-section-title">Characters</div>
@@ -400,10 +448,10 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
             <div class="char-heirloom-title" id="char-heirloom-title"></div>
             <button class="heirloom-rename-btn" title="Rename heirloom" onclick="startHeirloomRename()">✎</button>
           </div>
-          <div id="heirloom-edit-row" style="display:none;margin-bottom:10px;">
+          <div id="heirloom-edit-row">
             <input class="heirloom-rename-input" id="heirloom-rename-input" type="text"/>
             <button class="heirloom-save-btn" onclick="saveHeirloomName()">Save</button>
-            <button class="heirloom-rename-btn" onclick="cancelHeirloomRename()" style="margin-left:4px;">✕</button>
+            <button class="heirloom-rename-btn" onclick="cancelHeirloomRename()">✕</button>
           </div>
           <div class="char-meta">
             <div class="meta-chip" id="char-type"></div>
@@ -478,6 +526,7 @@ const TIERS=[{tier:1,label:'Tier I',minLevel:1},{tier:2,label:'Tier II',minLevel
 let CATEGORIES=[];
 let db,characters=[],upgrades=[],awakenings={};
 let activeChar=null,spendTierFilter='all',spendCatFilter='all',spendSearch='',showLocked=false,selectedUpgradeId=null;
+let dmUnlocked=false,pinEntry='';
 
 async function init(){
   if(SUPABASE_URL==='YOUR_SUPABASE_URL'){hide('loading');show('config-notice');return;}
@@ -532,16 +581,68 @@ function switchPartyTab(which){
   el('tab-dm').classList.toggle('active', which==='dm');
   el('party-tab-content').style.display = which==='party' ? 'block' : 'none';
   el('dm-tab-content').style.display    = which==='dm'    ? 'block' : 'none';
-  if(which==='dm') renderDmPanel();
+  if(which==='dm'){
+    // show PIN gate unless already unlocked this session
+    if(!dmUnlocked){ showPinOverlay(); } else { renderDmPanel(); }
+  }
+}
+
+/* ── PIN ── */
+const DM_PIN='4397';
+
+function showPinOverlay(){
+  pinEntry='';
+  el('pin-error').textContent='';
+  updatePinDots();
+  el('pin-overlay').classList.remove('hidden');
+  el('dm-view').style.display='none';
+}
+
+function pinKey(digit){
+  if(pinEntry.length>=4) return;
+  pinEntry+=digit;
+  updatePinDots();
+  if(pinEntry.length===4) setTimeout(checkPin, 120);
+}
+
+function pinBackspace(){
+  pinEntry=pinEntry.slice(0,-1);
+  updatePinDots();
+  el('pin-error').textContent='';
+}
+
+function pinClear(){
+  pinEntry='';
+  updatePinDots();
+  el('pin-error').textContent='';
+}
+
+function updatePinDots(){
+  for(let i=0;i<4;i++){
+    const d=el('pd'+i);
+    d.classList.toggle('filled', i<pinEntry.length);
+    d.classList.remove('error');
+  }
+}
+
+function checkPin(){
+  if(pinEntry===DM_PIN){
+    dmUnlocked=true;
+    el('pin-overlay').classList.add('hidden');
+    el('dm-view').style.display='block';
+    renderDmPanel();
+  } else {
+    el('pin-error').textContent='Incorrect PIN';
+    for(let i=0;i<4;i++) el('pd'+i).classList.add('error');
+    setTimeout(()=>{pinEntry='';updatePinDots();el('pin-error').textContent='';},900);
+  }
 }
 
 function renderDmPanel(){
   const list=el('dm-char-list'); list.innerHTML='';
   for(const char of characters){
     const pts=availPts(char.id);
-    const avatarHtml=char.image_url
-      ?`<img src="${char.image_url}" alt="${char.name}"/>`
-      :`✦`;
+    const avatarHtml=char.image_url?`<img src="${char.image_url}" alt="${char.name}"/>`:`✦`;
     const card=document.createElement('div');
     card.className='dm-char-card';
     card.innerHTML=`
@@ -558,19 +659,20 @@ function renderDmPanel(){
         </div>
       </div>
       <div class="dm-char-controls">
-        <div class="dm-control-group">
-          <span class="dm-control-label">Level</span>
-          <div class="dm-stepper">
-            <button class="dm-step-btn" onclick="dmAdjustLevel('${char.id}',-1)">−</button>
-            <div class="dm-step-val" id="dm-lvdisp-${char.id}">${char.level}</div>
-            <button class="dm-step-btn" onclick="dmAdjustLevel('${char.id}',1)">+</button>
+        <div class="dm-control-row">
+          <div class="dm-control-group">
+            <span class="dm-control-label">Level</span>
+            <div class="dm-stepper">
+              <button class="dm-step-btn" onclick="dmAdjustLevel('${char.id}',-1)">−</button>
+              <div class="dm-step-val" id="dm-lvdisp-${char.id}">${char.level}</div>
+              <button class="dm-step-btn" onclick="dmAdjustLevel('${char.id}',1)">+</button>
+            </div>
           </div>
         </div>
-        <div class="dm-control-group">
-          <span class="dm-control-label">Award SP</span>
+        <div class="dm-sp-row">
           <input class="dm-sp-input" id="dm-spinput-${char.id}" type="number" value="1" min="1"/>
-          <button class="dm-apply-btn" onclick="dmAwardSP('${char.id}',1)">+ Award</button>
-          <button class="dm-deduct-btn" onclick="dmAwardSP('${char.id}',-1)">− Deduct</button>
+          <button class="dm-apply-btn" onclick="dmAwardSP('${char.id}',1)">+ Award SP</button>
+          <button class="dm-deduct-btn" onclick="dmAwardSP('${char.id}',-1)">− Deduct SP</button>
         </div>
       </div>`;
     list.appendChild(card);
