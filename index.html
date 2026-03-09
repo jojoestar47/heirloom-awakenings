@@ -266,12 +266,82 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 .confirm-btn:disabled{opacity:.2;cursor:not-allowed;background:transparent;box-shadow:none;border-color:var(--crack);color:var(--text-faint);}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--stone2);border:1px solid var(--ember-dim);color:var(--flame);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;padding:11px 22px;z-index:9998;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast.show{opacity:1;}
+
+/* PARTY TABS */
+.party-tabs{display:flex;border-bottom:1px solid var(--crack);background:var(--stone);position:relative;z-index:2;}
+.party-tabs::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--ember-dim),var(--flame-dim),var(--ember-dim),transparent);}
+.party-tab{flex:1;padding:13px 10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-faint);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:4px;text-transform:uppercase;cursor:pointer;transition:all .2s;position:relative;top:1px;}
+.party-tab:hover{color:var(--text-dim);}
+.party-tab.active{color:var(--ember);border-bottom-color:var(--ember);}
+.party-tab.dm-tab{color:var(--purple);}
+.party-tab.dm-tab:hover{color:var(--purple);}
+.party-tab.dm-tab.active{color:var(--purple);border-bottom-color:var(--purple);}
+
+/* DM PANEL */
+#dm-view{display:none;}
+.dm-inner{max-width:var(--max-w);margin:0 auto;padding:24px 20px 40px;}
+@media(max-width:480px){.dm-inner{padding:18px 14px 32px;}}
+.dm-section{margin-bottom:32px;}
+.dm-section-title{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.dm-section-title::before{content:'✦';color:var(--ember-dim);}
+.dm-section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--crack),transparent);}
+.dm-char-list{display:flex;flex-direction:column;gap:10px;}
+.dm-char-card{background:var(--stone);border:1px solid var(--crack);padding:14px 18px;}
+.dm-char-card-top{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.dm-char-avatar{width:38px;height:38px;border-radius:2px;background:var(--stone2);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;color:var(--ember);}
+.dm-char-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:saturate(.6) brightness(.7);}
+.dm-char-info{flex:1;}
+.dm-char-name{font-family:'Cinzel',serif;font-size:var(--fs-base);color:var(--white-heat);margin-bottom:2px;}
+.dm-char-sub{font-size:var(--fs-sm);color:var(--text-dim);font-style:italic;}
+.dm-char-stats{display:flex;gap:16px;flex-wrap:wrap;}
+.dm-stat{font-family:'Cinzel',serif;font-size:var(--fs-xs);color:var(--text-faint);letter-spacing:2px;}
+.dm-stat span{color:var(--flame);margin-left:4px;}
+.dm-char-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.dm-control-group{display:flex;align-items:center;gap:6px;background:var(--stone2);border:1px solid var(--crack);padding:6px 10px;}
+.dm-control-label{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);white-space:nowrap;}
+.dm-stepper{display:flex;align-items:center;gap:4px;}
+.dm-step-btn{width:28px;height:28px;background:none;border:1px solid var(--crack-lit);color:var(--text-dim);font-size:16px;line-height:1;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.dm-step-btn:hover{border-color:var(--ember-dim);color:var(--ember);}
+.dm-step-val{font-family:'Cinzel Decorative',serif;font-size:var(--fs-md);color:var(--flame);min-width:32px;text-align:center;}
+.dm-sp-input{width:60px;background:var(--stone);border:1px solid var(--crack-lit);color:var(--flame);font-family:'Cinzel Decorative',serif;font-size:var(--fs-md);padding:3px 6px;text-align:center;outline:none;}
+.dm-sp-input:focus{border-color:var(--ember-dim);}
+.dm-apply-btn{padding:7px 14px;background:rgba(232,144,42,.1);border:1px solid var(--ember-dim);color:var(--ember);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.dm-apply-btn:hover{background:rgba(232,144,42,.2);}
+.dm-deduct-btn{padding:7px 14px;background:rgba(180,60,40,.1);border:1px solid var(--red);color:var(--red);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.dm-deduct-btn:hover{background:rgba(180,60,40,.2);}
+
+/* ADD CHARACTER FORM */
+.dm-add-form{background:var(--stone);border:1px solid var(--crack);padding:20px 22px;}
+.dm-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+@media(max-width:480px){.dm-form-grid{grid-template-columns:1fr;}}
+.dm-field{display:flex;flex-direction:column;gap:5px;}
+.dm-field label{font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);}
+.dm-field input,.dm-field select{background:var(--stone2);border:1px solid var(--crack-lit);color:var(--text);font-family:'Crimson Pro',serif;font-size:var(--fs-base);padding:8px 12px;outline:none;transition:border-color .2s;width:100%;}
+.dm-field input:focus,.dm-field select:focus{border-color:var(--ember-dim);}
+.dm-field select option{background:var(--stone2);}
+.dm-submit{width:100%;padding:13px;background:linear-gradient(135deg,rgba(212,168,248,.1),rgba(106,64,128,.05));border:1px solid var(--purple-dim);color:var(--purple);font-family:'Cinzel',serif;font-size:var(--fs-sm);letter-spacing:4px;text-transform:uppercase;cursor:pointer;transition:all .25s;}
+.dm-submit:hover{background:rgba(212,168,248,.15);box-shadow:0 0 22px rgba(212,168,248,.15);}
+
+/* HEIRLOOM RENAME */
+.heirloom-rename-wrap{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.heirloom-rename-btn{background:none;border:none;color:var(--ember-dim);font-size:13px;cursor:pointer;padding:2px 4px;transition:color .2s;line-height:1;}
+.heirloom-rename-btn:hover{color:var(--ember);}
+.heirloom-rename-input{font-family:'Crimson Pro',serif;font-size:var(--fs-md);font-style:italic;color:var(--ember);background:transparent;border:none;border-bottom:1px solid var(--ember-dim);outline:none;padding:2px 4px;width:200px;}
+.heirloom-rename-input:focus{border-bottom-color:var(--ember);}
+.heirloom-save-btn{background:none;border:1px solid var(--ember-dim);color:var(--ember);font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:2px;text-transform:uppercase;padding:3px 10px;cursor:pointer;transition:all .2s;}
+.heirloom-save-btn:hover{background:rgba(232,144,42,.1);}
+
+/* TREE CARD CLICKABLE */
+.tree-card.available{cursor:pointer;}
+.tree-card.available:hover{border-color:var(--ember-dim);background:rgba(232,144,42,.04);}
+.tree-card.available:hover .tree-card-name{color:var(--ember);}
+
 </style>
 </head>
 <body>
 <header>
   <div class="header-inner">
-    <div>
+    <div style="cursor:pointer" onclick="goToParty()">
       <div class="logo-eyebrow">Embers of the Fallen</div>
       <div class="logo">Heirloom Awakenings</div>
     </div>
@@ -287,7 +357,37 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
   <div id="config-notice"><strong>Setup Required</strong>Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> in the script with your values from <strong>Supabase → Settings → API</strong>.</div>
   <div id="error-msg"></div>
 
-  <div id="party-view"><div class="party-inner"><div class="party-grid" id="party-grid"></div></div></div>
+  <div id="party-view">
+    <div class="party-tabs">
+      <button class="party-tab active" id="tab-party" onclick="switchPartyTab('party')">Party</button>
+      <button class="party-tab dm-tab" id="tab-dm" onclick="switchPartyTab('dm')">⚙ DM Panel</button>
+    </div>
+    <div id="party-tab-content"><div class="party-inner"><div class="party-grid" id="party-grid"></div></div></div>
+    <div id="dm-tab-content" style="display:none">
+      <div id="dm-view" style="display:block">
+        <div class="dm-inner">
+          <div class="dm-section">
+            <div class="dm-section-title">Characters</div>
+            <div class="dm-char-list" id="dm-char-list"></div>
+          </div>
+          <div class="dm-section">
+            <div class="dm-section-title">Add New Character</div>
+            <div class="dm-add-form">
+              <div class="dm-form-grid">
+                <div class="dm-field"><label>Character Name</label><input id="new-char-name" type="text" placeholder="Aldric Voss"/></div>
+                <div class="dm-field"><label>Heirloom Name</label><input id="new-heirloom-name" type="text" placeholder="The Ashen Blade"/></div>
+                <div class="dm-field"><label>Heirloom Type</label><input id="new-heirloom-type" type="text" placeholder="Weapon · Longsword"/></div>
+                <div class="dm-field"><label>Starting Level</label><input id="new-char-level" type="number" min="1" max="20" value="1"/></div>
+                <div class="dm-field"><label>Starting SP</label><input id="new-char-sp" type="number" min="0" value="0"/></div>
+                <div class="dm-field"><label>Sort Order</label><input id="new-char-sort" type="number" min="1" value="1"/></div>
+              </div>
+              <button class="dm-submit" onclick="addCharacter()">✦ &nbsp; Add Character &nbsp; ✦</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="char-view">
     <div class="char-inner">
@@ -296,7 +396,15 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
         <div class="char-hero-overlay"></div>
         <div class="char-hero-content">
           <div class="char-name" id="char-name"></div>
-          <div class="char-heirloom-title" id="char-heirloom-title"></div>
+          <div class="heirloom-rename-wrap" id="heirloom-static-row">
+            <div class="char-heirloom-title" id="char-heirloom-title"></div>
+            <button class="heirloom-rename-btn" title="Rename heirloom" onclick="startHeirloomRename()">✎</button>
+          </div>
+          <div id="heirloom-edit-row" style="display:none;margin-bottom:10px;">
+            <input class="heirloom-rename-input" id="heirloom-rename-input" type="text"/>
+            <button class="heirloom-save-btn" onclick="saveHeirloomName()">Save</button>
+            <button class="heirloom-rename-btn" onclick="cancelHeirloomRename()" style="margin-left:4px;">✕</button>
+          </div>
           <div class="char-meta">
             <div class="meta-chip" id="char-type"></div>
             <div class="meta-chip" id="char-level-chip"></div>
@@ -419,6 +527,102 @@ function renderParty(){
   }
 }
 
+function switchPartyTab(which){
+  el('tab-party').classList.toggle('active', which==='party');
+  el('tab-dm').classList.toggle('active', which==='dm');
+  el('party-tab-content').style.display = which==='party' ? 'block' : 'none';
+  el('dm-tab-content').style.display    = which==='dm'    ? 'block' : 'none';
+  if(which==='dm') renderDmPanel();
+}
+
+function renderDmPanel(){
+  const list=el('dm-char-list'); list.innerHTML='';
+  for(const char of characters){
+    const pts=availPts(char.id);
+    const avatarHtml=char.image_url
+      ?`<img src="${char.image_url}" alt="${char.name}"/>`
+      :`✦`;
+    const card=document.createElement('div');
+    card.className='dm-char-card';
+    card.innerHTML=`
+      <div class="dm-char-card-top">
+        <div class="dm-char-avatar">${avatarHtml}</div>
+        <div class="dm-char-info">
+          <div class="dm-char-name">${char.name}</div>
+          <div class="dm-char-sub">${char.heirloom_name}</div>
+        </div>
+        <div class="dm-char-stats">
+          <div class="dm-stat">LVL<span id="dm-lv-${char.id}">${char.level}</span></div>
+          <div class="dm-stat">SP<span id="dm-sp-${char.id}">${char.points}</span></div>
+          <div class="dm-stat">Avail<span id="dm-av-${char.id}">${pts}</span></div>
+        </div>
+      </div>
+      <div class="dm-char-controls">
+        <div class="dm-control-group">
+          <span class="dm-control-label">Level</span>
+          <div class="dm-stepper">
+            <button class="dm-step-btn" onclick="dmAdjustLevel('${char.id}',-1)">−</button>
+            <div class="dm-step-val" id="dm-lvdisp-${char.id}">${char.level}</div>
+            <button class="dm-step-btn" onclick="dmAdjustLevel('${char.id}',1)">+</button>
+          </div>
+        </div>
+        <div class="dm-control-group">
+          <span class="dm-control-label">Award SP</span>
+          <input class="dm-sp-input" id="dm-spinput-${char.id}" type="number" value="1" min="1"/>
+          <button class="dm-apply-btn" onclick="dmAwardSP('${char.id}',1)">+ Award</button>
+          <button class="dm-deduct-btn" onclick="dmAwardSP('${char.id}',-1)">− Deduct</button>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  }
+}
+
+async function dmAdjustLevel(charId, delta){
+  const char=characters.find(c=>c.id===charId); if(!char) return;
+  const newLevel=Math.max(1,Math.min(20,char.level+delta));
+  if(newLevel===char.level) return;
+  const{error}=await db.from('characters').update({level:newLevel}).eq('id',charId);
+  if(error){showToast('Error saving level');return;}
+  char.level=newLevel;
+  el(`dm-lv-${charId}`).textContent=newLevel;
+  el(`dm-lvdisp-${charId}`).textContent=newLevel;
+  showToast(`${char.name} → Level ${newLevel}`);
+}
+
+async function dmAwardSP(charId, sign){
+  const char=characters.find(c=>c.id===charId); if(!char) return;
+  const inputEl=el(`dm-spinput-${charId}`);
+  const amount=parseInt(inputEl.value)||1;
+  if(amount<=0) return;
+  const delta=sign*amount;
+  const newPoints=Math.max(0,char.points+delta);
+  const{error}=await db.from('characters').update({points:newPoints}).eq('id',charId);
+  if(error){showToast('Error saving SP');return;}
+  char.points=newPoints;
+  el(`dm-sp-${charId}`).textContent=newPoints;
+  el(`dm-av-${charId}`).textContent=availPts(charId);
+  showToast(`${char.name}: ${delta>0?'+':''}${delta} SP`);
+}
+
+async function addCharacter(){
+  const name=el('new-char-name').value.trim();
+  const heirloom=el('new-heirloom-name').value.trim();
+  const type=el('new-heirloom-type').value.trim();
+  const level=parseInt(el('new-char-level').value)||1;
+  const points=parseInt(el('new-char-sp').value)||0;
+  const sort=parseInt(el('new-char-sort').value)||characters.length+1;
+  if(!name||!heirloom){showToast('Name and heirloom required');return;}
+  const{data,error}=await db.from('characters').insert({name,heirloom_name:heirloom,heirloom_type:type,level,points,sort_order:sort}).select().single();
+  if(error){showToast('Error adding character');console.error(error);return;}
+  characters.push(data);
+  awakenings[data.id]={};
+  showToast(`${name} added ✦`);
+  // clear form
+  ['new-char-name','new-heirloom-name','new-heirloom-type'].forEach(id=>el(id).value='');
+  el('new-char-level').value='1'; el('new-char-sp').value='0';
+  renderDmPanel(); renderParty();
+}
+
 async function goToChar(charId){
   if(charId)activeChar=charId;if(!activeChar)return;
   const char=characters.find(c=>c.id===activeChar);if(!char)return;
@@ -428,7 +632,9 @@ async function goToChar(charId){
   const heroEl=el('char-hero'),ph=el('char-hero-placeholder');
   if(char.image_url){let img=heroEl.querySelector('img.char-hero-img');if(!img){img=document.createElement('img');img.className='char-hero-img';heroEl.insertBefore(img,heroEl.firstChild);}img.src=char.image_url;ph.style.display='none';}
   else{const img=heroEl.querySelector('img.char-hero-img');if(img)img.remove();ph.style.display='flex';}
-  el('char-name').textContent=char.name;el('char-heirloom-title').textContent=char.heirloom_name;
+  el('char-name').textContent=char.name;
+  el('char-heirloom-title').textContent=char.heirloom_name;
+  cancelHeirloomRename();
   el('char-type').textContent=char.heirloom_type;el('char-level-chip').textContent=`Level ${char.level}`;
   el('header-char').textContent=char.name;el('header-char').style.display='block';
   el('header-level').textContent=`LVL ${char.level}`;el('header-level').style.display='block';
@@ -531,15 +737,68 @@ function renderTree(){
 }
 
 function makeTreeCard(u,char){
-  const aw=charAw(activeChar),taken=hasTaken(activeChar,u.id),count=aw[u.id]||0;
-  const available=char&&char.level>=(TIERS.find(t=>t.tier===u.tier)?.minLevel||1);
+  const aw=charAw(activeChar),taken=hasTaken(activeChar,u.id);
+  const levelOk=char&&char.level>=(TIERS.find(t=>t.tier===u.tier)?.minLevel||1);
+  const canSelect=levelOk&&!taken&&availPts(activeChar)>=u.cost;
   const card=document.createElement('div');
-  card.className='tree-card tier-'+u.tier+(taken?' taken':'')+((!available&&!taken)?' unavailable':'');
+  card.className='tree-card tier-'+u.tier+(taken?' taken':'')+((!levelOk&&!taken)?' unavailable':'')+(canSelect?' available':'');
   card.innerHTML=`<div class="tree-card-name">${u.name}</div><div class="tree-card-meta"><span class="tree-badge tb-cost">${u.cost} SP</span>${u.repeatable?'<span class="tree-badge tb-repeat">Limited</span>':''}${taken?`<span class="tree-badge tb-taken">✦ Attuned</span>`:''}${u.requirements_note?`<span class="tree-badge tb-req">${u.requirements_note}</span>`:''}</div><div class="tree-card-effect">${u.effect}</div>`;
+  if(canSelect){
+    card.title='Tap to select this awakening';
+    card.onclick=()=>goToSpendWithSelection(u.id);
+  }
   return card;
 }
 
-function goToParty(){renderParty();hide('char-view');hide('spend-view');el('party-view').style.display='block';el('header-char').style.display='none';el('header-level').style.display='none';scrollTop();}
+function goToSpendWithSelection(uid){
+  if(!activeChar)return;
+  spendTierFilter='all';spendCatFilter='all';spendSearch='';showLocked=false;
+  selectedUpgradeId=uid;
+  el('spend-search').value='';
+  el('spend-back').onclick=()=>goToChar();
+  buildSpendFilters();renderSpendGrid();updateConfirmBar();
+  el('spend-pts').textContent=`${availPts(activeChar)} SP`;
+  hide('char-view');el('spend-view').style.display='block';
+  // scroll to the selected card after render
+  setTimeout(()=>{
+    const selected=el('spend-grid').querySelector('.selected');
+    if(selected)selected.scrollIntoView({behavior:'smooth',block:'center'});
+  },80);
+}
+
+function goToParty(){
+  renderParty();
+  hide('char-view');hide('spend-view');
+  el('party-view').style.display='block';
+  el('header-char').style.display='none';el('header-level').style.display='none';
+  // always land on party tab
+  switchPartyTab('party');
+  scrollTop();
+}
+
+function startHeirloomRename(){
+  const char=characters.find(c=>c.id===activeChar); if(!char) return;
+  el('heirloom-static-row').style.display='none';
+  el('heirloom-edit-row').style.display='flex';
+  el('heirloom-rename-input').value=char.heirloom_name;
+  el('heirloom-rename-input').focus();
+}
+function cancelHeirloomRename(){
+  el('heirloom-edit-row').style.display='none';
+  el('heirloom-static-row').style.display='flex';
+}
+async function saveHeirloomName(){
+  const newName=el('heirloom-rename-input').value.trim();
+  if(!newName) return;
+  const char=characters.find(c=>c.id===activeChar); if(!char) return;
+  const{error}=await db.from('characters').update({heirloom_name:newName}).eq('id',activeChar);
+  if(error){showToast('Error saving name');return;}
+  char.heirloom_name=newName;
+  el('char-heirloom-title').textContent=newName;
+  cancelHeirloomRename();
+  showToast('Heirloom renamed ✦');
+  renderParty();
+}
 
 function goToSpend(){
   if(!activeChar)return;
