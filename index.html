@@ -518,9 +518,10 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 
 <div class="toast" id="toast"></div>
 
+<script src="config.js"></script>
 <script>
-const SUPABASE_URL      = 'https://esanxehwfmiktwmxzzrv.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_MOlcKwFGCBaXhMtKiDOafw_wWHdvsl-';
+const SUPABASE_URL      = window.SUPABASE_URL      || 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
 
 const TIERS=[{tier:1,label:'Tier I',minLevel:1},{tier:2,label:'Tier II',minLevel:5},{tier:3,label:'Tier III',minLevel:10},{tier:4,label:'Tier IV',minLevel:15}];
 let CATEGORIES=[];
@@ -531,7 +532,7 @@ let dmUnlocked=false,pinEntry='';
 async function init(){
   if(SUPABASE_URL==='YOUR_SUPABASE_URL'){hide('loading');show('config-notice');return;}
   try{
-    db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{db:{schema:'heirloom_awakenings'}});
     await loadAll();
     hide('loading');renderParty();show('party-view');
   }catch(e){hide('loading');el('error-msg').style.display='block';el('error-msg').textContent='Could not connect. Check your Supabase config.';console.error(e);}
