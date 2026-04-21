@@ -518,9 +518,10 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 
 <div class="toast" id="toast"></div>
 
+<script src="config.js"></script>
 <script>
-const SUPABASE_URL      = 'https://esanxehwfmiktwmxzzrv.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_MOlcKwFGCBaXhMtKiDOafw_wWHdvsl-';
+const SUPABASE_URL      = window.SUPABASE_URL      || 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
 
 const TIERS=[{tier:1,label:'Tier I',minLevel:1},{tier:2,label:'Tier II',minLevel:5},{tier:3,label:'Tier III',minLevel:10},{tier:4,label:'Tier IV',minLevel:15}];
 let CATEGORIES=[];
@@ -537,7 +538,7 @@ async function init(){
   }catch(e){hide('loading');el('error-msg').style.display='block';el('error-msg').textContent='Could not connect. Check your Supabase config.';console.error(e);}
 }
 async function loadAll(){
-  const[cR,uR,aR]=await Promise.all([db.from('characters').select('*').order('sort_order'),db.from('upgrades').select('*').order('sort_order'),db.from('character_awakenings').select('*')]);
+  const[cR,uR,aR]=await Promise.all([db.from('ha_characters').select('*').order('sort_order'),db.from('ha_upgrades').select('*').order('sort_order'),db.from('ha_character_awakenings').select('*')]);
   if(cR.error)throw cR.error;if(uR.error)throw uR.error;
   characters=cR.data;upgrades=uR.data;awakenings={};
   for(const c of characters)awakenings[c.id]={};
@@ -683,7 +684,7 @@ async function dmAdjustLevel(charId, delta){
   const char=characters.find(c=>c.id===charId); if(!char) return;
   const newLevel=Math.max(1,Math.min(20,char.level+delta));
   if(newLevel===char.level) return;
-  const{error}=await db.from('characters').update({level:newLevel}).eq('id',charId);
+  const{error}=await db.from('ha_characters').update({level:newLevel}).eq('id',charId);
   if(error){showToast('Error saving level');return;}
   char.level=newLevel;
   el(`dm-lv-${charId}`).textContent=newLevel;
@@ -698,7 +699,7 @@ async function dmAwardSP(charId, sign){
   if(amount<=0) return;
   const delta=sign*amount;
   const newPoints=Math.max(0,char.points+delta);
-  const{error}=await db.from('characters').update({points:newPoints}).eq('id',charId);
+  const{error}=await db.from('ha_characters').update({points:newPoints}).eq('id',charId);
   if(error){showToast('Error saving SP');return;}
   char.points=newPoints;
   el(`dm-sp-${charId}`).textContent=newPoints;
@@ -714,7 +715,7 @@ async function addCharacter(){
   const points=parseInt(el('new-char-sp').value)||0;
   const sort=parseInt(el('new-char-sort').value)||characters.length+1;
   if(!name||!heirloom){showToast('Name and heirloom required');return;}
-  const{data,error}=await db.from('characters').insert({name,heirloom_name:heirloom,heirloom_type:type,level,points,sort_order:sort}).select().single();
+  const{data,error}=await db.from('ha_characters').insert({name,heirloom_name:heirloom,heirloom_type:type,level,points,sort_order:sort}).select().single();
   if(error){showToast('Error adding character');console.error(error);return;}
   characters.push(data);
   awakenings[data.id]={};
@@ -728,7 +729,7 @@ async function addCharacter(){
 async function goToChar(charId){
   if(charId)activeChar=charId;if(!activeChar)return;
   const char=characters.find(c=>c.id===activeChar);if(!char)return;
-  const{data}=await db.from('character_awakenings').select('*').eq('character_id',activeChar);
+  const{data}=await db.from('ha_character_awakenings').select('*').eq('character_id',activeChar);
   awakenings[activeChar]={};for(const a of(data||[]))awakenings[activeChar][a.upgrade_id]=a.count;
   const pts=availPts(activeChar);
   const heroEl=el('char-hero'),ph=el('char-hero-placeholder');
@@ -801,7 +802,7 @@ async function removeAwakening(uid){
   const actionsEl=el(`actions-${uid}`);
   actionsEl.innerHTML=`<span style="font-family:'Cinzel',serif;font-size:var(--fs-xs);color:var(--text-faint);letter-spacing:2px;">Removing…</span>`;
   let error;
-  ({error}=await db.from('character_awakenings').delete().eq('character_id',activeChar).eq('upgrade_id',uid));
+  ({error}=await db.from('ha_character_awakenings').delete().eq('character_id',activeChar).eq('upgrade_id',uid));
   if(error){showToast('Something went wrong');renderTaken();return;}
   if(!awakenings[activeChar])awakenings[activeChar]={};
   delete awakenings[activeChar][uid];
@@ -893,7 +894,7 @@ async function saveHeirloomName(){
   const newName=el('heirloom-rename-input').value.trim();
   if(!newName) return;
   const char=characters.find(c=>c.id===activeChar); if(!char) return;
-  const{error}=await db.from('characters').update({heirloom_name:newName}).eq('id',activeChar);
+  const{error}=await db.from('ha_characters').update({heirloom_name:newName}).eq('id',activeChar);
   if(error){showToast('Error saving name');return;}
   char.heirloom_name=newName;
   el('char-heirloom-title').textContent=newName;
@@ -976,7 +977,7 @@ async function confirmAwakening(){
   const u=upgrades.find(x=>x.id===selectedUpgradeId);if(!u||!canTake(activeChar,u))return;
   const btn=el('confirm-btn');btn.disabled=true;btn.textContent='✦  Awakening…';
   const existing=awakenings[activeChar]?.[u.id]||0;let error;
-  ({error}=await db.from('character_awakenings').insert({character_id:activeChar,upgrade_id:u.id,count:1}));
+  ({error}=await db.from('ha_character_awakenings').insert({character_id:activeChar,upgrade_id:u.id,count:1}));
   if(error){showToast('Something went wrong');btn.disabled=false;btn.textContent='✦  Awaken';return;}
   if(!awakenings[activeChar])awakenings[activeChar]={};
   awakenings[activeChar][u.id]=(awakenings[activeChar][u.id]||0)+1;
@@ -994,7 +995,7 @@ async function handleImageUpload(event){
   if(upErr){el('upload-status').textContent='Upload failed.';return;}
   const{data:urlData}=db.storage.from('heirloom-images').getPublicUrl(path);
   const imageUrl=urlData.publicUrl+'?v='+Date.now();
-  const{error:dbErr}=await db.from('characters').update({image_url:imageUrl}).eq('id',activeChar);
+  const{error:dbErr}=await db.from('ha_characters').update({image_url:imageUrl}).eq('id',activeChar);
   if(dbErr){el('upload-status').textContent='Could not save image.';return;}
   const char=characters.find(c=>c.id===activeChar);if(char)char.image_url=imageUrl;
   el('upload-status').textContent='Saved.';showToast('Image updated');goToChar(activeChar);
