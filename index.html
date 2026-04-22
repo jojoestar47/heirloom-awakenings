@@ -532,7 +532,7 @@ let dmUnlocked=false,pinEntry='';
 async function init(){
   if(SUPABASE_URL==='YOUR_SUPABASE_URL'){hide('loading');show('config-notice');return;}
   try{
-    db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{db:{schema:'heirloom_awakenings'}});
     await loadAll();
     hide('loading');renderParty();show('party-view');
   }catch(e){hide('loading');el('error-msg').style.display='block';el('error-msg').textContent='Could not connect. Check your Supabase config.';console.error(e);}
