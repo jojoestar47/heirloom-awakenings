@@ -6,7 +6,7 @@
 <title>Heirloom Awakenings — Embers of the Fallen</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- DB client (@neondatabase/postgrest-js) is loaded via ESM in init() -->
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -377,7 +377,7 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 
 <div class="scroll-area" id="scroll-area">
   <div id="loading"><div class="loading-glyph">✦</div><div class="loading-text">The Eldryn stirs…</div></div>
-  <div id="config-notice"><strong>Setup Required</strong>Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> in the script with your values from <strong>Supabase → Settings → API</strong>.</div>
+  <div id="config-notice"><strong>Setup Required</strong>Set <code>NEON_DATA_API_URL</code> and <code>NEON_AUTH_URL</code> in <code>config.js</code> from your <strong>Neon Console → Data API</strong> page.</div>
   <div id="error-msg"></div>
 
   <div id="party-view">
@@ -465,8 +465,7 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
         </div>
       </div>
       <div class="upload-row">
-        <button class="upload-btn" onclick="document.getElementById('image-input').click()">✦ Upload Image</button>
-        <input type="file" id="image-input" accept="image/*" onchange="handleImageUpload(event)"/>
+        <button class="upload-btn" onclick="setCharacterImage()">✦ Set Image URL</button>
         <span class="upload-status" id="upload-status"></span>
       </div>
       <div class="char-body">
@@ -521,8 +520,22 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 
 <script src="config.js"></script>
 <script>
-const SUPABASE_URL      = window.SUPABASE_URL      || 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+const NEON_DATA_API_URL = window.NEON_DATA_API_URL || 'YOUR_NEON_DATA_API_URL';
+const NEON_AUTH_URL     = window.NEON_AUTH_URL     || 'YOUR_NEON_AUTH_URL';
+
+// Neon's Data API requires a JWT on every request. This app has no login, so we
+// fetch a short-lived anonymous token (Postgres role=anonymous) and reuse it
+// until ~60s before it expires. fetchWithToken() calls getAnonToken() per request.
+let _anonTok=null,_anonExp=0;
+async function getAnonToken(){
+  const now=Date.now()/1000;
+  if(_anonTok&&now<_anonExp-60)return _anonTok;
+  const r=await fetch(NEON_AUTH_URL+'/token/anonymous');
+  if(!r.ok)throw new Error('anon token '+r.status);
+  const j=await r.json();
+  _anonTok=j.token;_anonExp=j.expires_at||(now+3000);
+  return _anonTok;
+}
 
 const TIERS=[{tier:1,label:'Tier I',minLevel:1},{tier:2,label:'Tier II',minLevel:5},{tier:3,label:'Tier III',minLevel:10},{tier:4,label:'Tier IV',minLevel:15}];
 let CATEGORIES=[];
@@ -531,12 +544,13 @@ let activeChar=null,spendTierFilter='all',spendCatFilter='all',spendSearch='',sh
 let dmUnlocked=false,pinEntry='';
 
 async function init(){
-  if(SUPABASE_URL==='YOUR_SUPABASE_URL'){hide('loading');show('config-notice');return;}
+  if(NEON_DATA_API_URL==='YOUR_NEON_DATA_API_URL'){hide('loading');show('config-notice');return;}
   try{
-    db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    const{NeonPostgrestClient,fetchWithToken}=await import('https://esm.sh/@neondatabase/postgrest-js');
+    db=new NeonPostgrestClient({dataApiUrl:NEON_DATA_API_URL,options:{global:{fetch:fetchWithToken(getAnonToken)}}});
     await loadAll();
     hide('loading');renderParty();show('party-view');
-  }catch(e){hide('loading');el('error-msg').style.display='block';el('error-msg').textContent='Could not connect. Check your Supabase config.';console.error(e);}
+  }catch(e){hide('loading');el('error-msg').style.display='block';el('error-msg').textContent='Could not connect to Neon. Check your config.';console.error(e);}
 }
 async function loadAll(){
   const[cR,uR,aR]=await Promise.all([db.from('ha_characters').select('*').order('sort_order'),db.from('ha_upgrades').select('*').order('sort_order'),db.from('ha_character_awakenings').select('*')]);
@@ -988,17 +1002,19 @@ async function confirmAwakening(){
   renderSpendGrid();updateConfirmBar();
 }
 
-async function handleImageUpload(event){
-  const file=event.target.files[0];if(!file||!activeChar)return;
-  el('upload-status').textContent='Uploading…';
-  const ext=file.name.split('.').pop(),path=`${activeChar}.${ext}`;
-  const{error:upErr}=await db.storage.from('heirloom-images').upload(path,file,{upsert:true});
-  if(upErr){el('upload-status').textContent='Upload failed.';return;}
-  const{data:urlData}=db.storage.from('heirloom-images').getPublicUrl(path);
-  const imageUrl=urlData.publicUrl+'?v='+Date.now();
-  const{error:dbErr}=await db.from('ha_characters').update({image_url:imageUrl}).eq('id',activeChar);
-  if(dbErr){el('upload-status').textContent='Could not save image.';return;}
-  const char=characters.find(c=>c.id===activeChar);if(char)char.image_url=imageUrl;
+// Neon has no object storage. Images are either committed to the repo (images/…)
+// or any hosted URL (e.g. a D&D Beyond avatar). The DM sets a character's portrait
+// by pasting a URL — image_url is just text, so this needs no upload backend.
+async function setCharacterImage(){
+  if(!activeChar)return;
+  const char=characters.find(c=>c.id===activeChar);
+  const url=prompt('Paste an image URL for this character (leave blank to remove):',char?.image_url||'');
+  if(url===null)return;
+  const imageUrl=url.trim()||null;
+  el('upload-status').textContent='Saving…';
+  const{error}=await db.from('ha_characters').update({image_url:imageUrl}).eq('id',activeChar);
+  if(error){el('upload-status').textContent='Could not save image.';return;}
+  if(char)char.image_url=imageUrl;
   el('upload-status').textContent='Saved.';showToast('Image updated');goToChar(activeChar);
 }
 
