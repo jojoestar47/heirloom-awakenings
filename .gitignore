@@ -1,0 +1,5 @@
+# Secrets — never commit (DB passwords, connection strings, etc.)
+env.txt
+.env
+.env.*
+*.env
