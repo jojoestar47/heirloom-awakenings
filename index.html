@@ -93,8 +93,26 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 .roster-eyebrow{font-size:var(--fs-xs);letter-spacing:6px;text-transform:uppercase;color:var(--violet);opacity:.85;margin-bottom:8px;}
 .roster-title{font-variation-settings:'opsz' 144;font-weight:600;font-size:var(--fs-2xl);color:#fff;letter-spacing:.5px;margin-bottom:8px;text-shadow:0 0 30px rgba(176,124,255,.4);}
 .roster-sub{font-size:var(--fs-sm);color:var(--text-dim);letter-spacing:1px;}
-.party-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,200px));gap:18px;justify-content:center;}
-@media(max-width:480px){.party-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.party-inner{padding:24px 16px 40px;}.roster-head{margin-bottom:20px;}}
+.constellation{position:relative;width:100%;height:clamp(360px,56vh,500px);}
+.cn-lines{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+.cn-lines line{stroke:#b07cff;stroke-width:1;vector-effect:non-scaling-stroke;opacity:.3;}
+.cn-lines line.loop{opacity:.15;}
+.cn-core{position:absolute;transform:translate(-50%,-50%);z-index:1;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(176,124,255,.18),transparent 70%);pointer-events:none;}
+.cn-core span{font-variation-settings:'opsz' 144;font-size:26px;color:#b07cff;opacity:.65;text-shadow:0 0 16px #b07cff;animation:breathe 4s ease-in-out infinite;}
+.cn-node{position:absolute;transform:translate(-50%,-50%);width:128px;text-align:center;cursor:pointer;z-index:2;}
+.cn-node:hover{z-index:5;}
+.cn-port{width:74px;height:74px;border-radius:50%;margin:0 auto 9px;display:flex;align-items:center;justify-content:center;overflow:hidden;font-variation-settings:'opsz' 144;font-weight:600;font-size:26px;color:#fff;background:radial-gradient(circle at 50% 35%,#2a2150,#15103a);border:1.5px solid rgba(150,120,255,.4);position:relative;transition:transform .2s,box-shadow .2s;}
+.cn-port img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+.cn-node:hover .cn-port{transform:scale(1.09);}
+.cn-node.sp .cn-port{border-color:#b07cff;box-shadow:0 0 22px rgba(176,124,255,.55);animation:cpulse 3s ease-in-out infinite;}
+.cn-node.calm .cn-port{border-color:rgba(52,224,208,.5);box-shadow:0 0 14px rgba(52,224,208,.22);}
+@keyframes cpulse{0%,100%{box-shadow:0 0 18px rgba(176,124,255,.45)}50%{box-shadow:0 0 32px rgba(176,124,255,.9)}}
+.cn-badge{position:absolute;top:-4px;right:-4px;background:#b07cff;color:#1a0f33;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;border:2px solid #0c0a22;letter-spacing:.3px;}
+.cn-name{font-variation-settings:'opsz' 144;font-weight:600;font-size:15px;color:#fff;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cn-heir{font-size:12px;font-style:italic;color:#b07cff;margin:1px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cn-lv{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#7c739f;margin:2px 0 0;}
+.constellation-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#6b6398;font-style:italic;font-size:var(--fs-base);}
+@media(max-width:560px){.cn-node{width:104px;}.cn-port{width:62px;height:62px;font-size:22px;}.cn-name{font-size:14px;}.party-inner{padding:24px 16px 40px;}.roster-head{margin-bottom:18px;}}
 .party-card{background:var(--glass);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
 .party-card:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,.55),0 0 22px rgba(176,124,255,.12);}
 .party-card.awakened{animation:card-glow 3.4s ease-in-out infinite;}
@@ -431,7 +449,7 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
         <h1 class="roster-title">Choose a vessel</h1>
         <p class="roster-sub" id="roster-sub"></p>
       </div>
-      <div class="party-grid" id="party-grid"></div>
+      <div class="constellation" id="constellation"></div>
     </div></div>
     <div id="dm-tab-content" style="display:none">
       <!-- PIN GATE -->
@@ -628,22 +646,48 @@ function canTake(cid,u){if(!tierUnlocked(cid,u.tier))return false;if(hasTaken(ci
 function formatEffect(t){return t.replace(/(\d+d\d+|\b\d+(?=\s*(?:ft|feet|HP|hit points|SP|minutes?|hours?|days?|rounds?)))/g,'<em>$1</em>');}
 function tcClass(t){return 'tc'+t;}
 
+// Position N party members as a constellation in a 0–100 coordinate space.
+// 1 → center; 2–6 → a single staggered ring; 7+ → inner + outer rings.
+function layoutPositions(n){
+  const cx=50,cy=50,start=-Math.PI/2;
+  if(n===1)return[{x:cx,y:cy}];
+  const pos=[];
+  if(n<=6){
+    for(let i=0;i<n;i++){
+      const a=start+i*(2*Math.PI/n),rad=(i%2===0)?1:0.8;
+      pos.push({x:cx+34*rad*Math.cos(a),y:cy+33*rad*Math.sin(a)});
+    }
+  }else{
+    const inner=Math.floor(n/2),outer=n-inner;
+    for(let i=0;i<inner;i++){const a=start+i*(2*Math.PI/inner);pos.push({x:cx+19*Math.cos(a),y:cy+18*Math.sin(a)});}
+    for(let i=0;i<outer;i++){const a=start+0.45+i*(2*Math.PI/outer);pos.push({x:cx+37*Math.cos(a),y:cy+35*Math.sin(a)});}
+  }
+  return pos;
+}
+
 function renderParty(){
-  const grid=el('party-grid');grid.innerHTML='';
   el('header-char').style.display='none';el('header-level').style.display='none';
   const subEl=el('roster-sub');
   if(subEl){const withSP=characters.filter(c=>availPts(c.id)>0).length;subEl.textContent=`${characters.length} heirloom${characters.length===1?'':'s'}`+(withSP?` · ${withSP} awaiting awakening`:'');}
-  for(const char of characters){
-    const pts=availPts(char.id),taken=takenCount(char.id),hasPoints=pts>0;
-    const maxPips=Math.min(char.points,10);
-    let pips='';for(let i=0;i<maxPips;i++)pips+=`<div class="pip${i>=taken?' empty':''}"></div>`;
-    const imgHtml=char.image_url?`<img src="${char.image_url}" alt="${char.name}" loading="lazy"/>`:`<div class="card-placeholder">✦</div>`;
-    const card=document.createElement('div');
-    card.className='party-card'+(hasPoints?' awakened':'');
-    card.onclick=()=>goToChar(char.id);
-    card.innerHTML=`<div class="card-img-wrap">${imgHtml}</div><div class="card-body"><div class="card-char-name">${char.name}</div><div class="card-heirloom">${char.heirloom_name}</div><div class="card-footer"><div class="pips">${pips}</div>${hasPoints?`<div class="pts-badge">${pts} SP</div>`:''}</div></div>`;
-    grid.appendChild(card);
-  }
+  const stage=el('constellation');if(!stage)return;
+  stage.innerHTML='';
+  const n=characters.length;
+  if(n===0){stage.innerHTML='<div class="constellation-empty">No vessels yet — add one in the DM panel.</div>';return;}
+  const pos=layoutPositions(n),cx=50,cy=50;
+  let lines='';
+  for(let i=0;i<n;i++)lines+=`<line x1="${cx}" y1="${cy}" x2="${pos[i].x.toFixed(2)}" y2="${pos[i].y.toFixed(2)}"/>`;
+  if(n>1&&n<=6)for(let i=0;i<n;i++){const a=pos[i],b=pos[(i+1)%n];lines+=`<line class="loop" x1="${a.x.toFixed(2)}" y1="${a.y.toFixed(2)}" x2="${b.x.toFixed(2)}" y2="${b.y.toFixed(2)}"/>`;}
+  stage.innerHTML=`<svg class="cn-lines" viewBox="0 0 100 100" preserveAspectRatio="none"><g>${lines}</g></svg>`+(n>1?`<div class="cn-core" style="left:50%;top:50%"><span>✦</span></div>`:'');
+  characters.forEach((char,i)=>{
+    const pts=availPts(char.id),hasSP=pts>0;
+    const node=document.createElement('div');
+    node.className='cn-node'+(hasSP?' sp':' calm');
+    node.style.left=pos[i].x+'%';node.style.top=pos[i].y+'%';
+    node.onclick=()=>goToChar(char.id);
+    const portInner=char.image_url?`<img src="${char.image_url}" alt="${escAttr(char.name)}" loading="lazy"/>`:`<span>${escHtml((char.name||'✦').charAt(0).toUpperCase())}</span>`;
+    node.innerHTML=`<div class="cn-port">${portInner}${hasSP?`<span class="cn-badge">${pts} SP</span>`:''}</div><p class="cn-name">${char.name}</p><p class="cn-heir">${char.heirloom_name||''}</p><p class="cn-lv">Lv ${char.level}</p>`;
+    stage.appendChild(node);
+  });
 }
 
 function switchPartyTab(which){
