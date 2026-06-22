@@ -35,6 +35,7 @@
   --radius: 12px;
   --radius-sm: 8px;
   --max-w: 900px;
+  --roster-w: 1140px;
   --fs-xs:   11px;
   --fs-sm:   13px;
   --fs-base: 15px;
@@ -85,10 +86,15 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 @keyframes spglow{0%,100%{text-shadow:0 0 14px rgba(176,124,255,.55)}50%{text-shadow:0 0 28px rgba(176,124,255,.95)}}
 
 /* PARTY */
-#party-view{display:none;}
-.party-inner{max-width:var(--max-w);margin:0 auto;padding:24px 20px;}
-.party-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;}
-@media(max-width:480px){.party-grid{grid-template-columns:repeat(2,1fr);gap:12px;}}
+#party-view{display:none;flex-direction:column;min-height:100%;}
+#party-tab-content{display:flex;flex:1;flex-direction:column;justify-content:safe center;min-height:0;overflow-y:auto;}
+.party-inner{width:100%;max-width:var(--roster-w);margin:0 auto;padding:40px 24px 56px;}
+.roster-head{text-align:center;margin-bottom:30px;}
+.roster-eyebrow{font-size:var(--fs-xs);letter-spacing:6px;text-transform:uppercase;color:var(--violet);opacity:.85;margin-bottom:8px;}
+.roster-title{font-variation-settings:'opsz' 144;font-weight:600;font-size:var(--fs-2xl);color:#fff;letter-spacing:.5px;margin-bottom:8px;text-shadow:0 0 30px rgba(176,124,255,.4);}
+.roster-sub{font-size:var(--fs-sm);color:var(--text-dim);letter-spacing:1px;}
+.party-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,200px));gap:18px;justify-content:center;}
+@media(max-width:480px){.party-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.party-inner{padding:24px 16px 40px;}.roster-head{margin-bottom:20px;}}
 .party-card{background:var(--glass);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
 .party-card:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,.55),0 0 22px rgba(176,124,255,.12);}
 .party-card.awakened{animation:card-glow 3.4s ease-in-out infinite;}
@@ -303,7 +309,8 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 .toast.show{opacity:1;}
 
 /* PARTY TABS */
-.party-tabs{display:flex;border-bottom:1px solid var(--line);background:rgba(12,10,34,.5);position:relative;z-index:2;}
+.party-tabs{display:block;border-bottom:1px solid var(--line);background:rgba(12,10,34,.5);position:relative;z-index:2;}
+.party-tabs-inner{display:flex;width:100%;max-width:var(--roster-w);margin:0 auto;}
 .party-tabs::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--aqua),var(--violet),var(--azure),transparent);opacity:.7;}
 .party-tab{flex:1;padding:13px 10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-faint);font-family:'Fraunces',serif;font-size:var(--fs-xs);letter-spacing:4px;text-transform:uppercase;cursor:pointer;transition:all .2s;position:relative;top:1px;}
 .party-tab:hover{color:var(--text-dim);}
@@ -413,10 +420,19 @@ header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px
 
   <div id="party-view">
     <div class="party-tabs">
-      <button class="party-tab active" id="tab-party" onclick="switchPartyTab('party')">Party</button>
-      <button class="party-tab dm-tab" id="tab-dm" onclick="switchPartyTab('dm')">⚙ DM Panel</button>
+      <div class="party-tabs-inner">
+        <button class="party-tab active" id="tab-party" onclick="switchPartyTab('party')">Party</button>
+        <button class="party-tab dm-tab" id="tab-dm" onclick="switchPartyTab('dm')">⚙ DM Panel</button>
+      </div>
     </div>
-    <div id="party-tab-content"><div class="party-inner"><div class="party-grid" id="party-grid"></div></div></div>
+    <div id="party-tab-content"><div class="party-inner">
+      <div class="roster-head">
+        <p class="roster-eyebrow">The Party</p>
+        <h1 class="roster-title">Choose a vessel</h1>
+        <p class="roster-sub" id="roster-sub"></p>
+      </div>
+      <div class="party-grid" id="party-grid"></div>
+    </div></div>
     <div id="dm-tab-content" style="display:none">
       <!-- PIN GATE -->
       <div class="pin-overlay" id="pin-overlay">
@@ -583,7 +599,7 @@ async function init(){
     const{NeonPostgrestClient,fetchWithToken}=await import('https://esm.sh/@neondatabase/postgrest-js');
     db=new NeonPostgrestClient({dataApiUrl:NEON_DATA_API_URL,options:{global:{fetch:fetchWithToken(getAnonToken)}}});
     await loadAll();
-    hide('loading');renderParty();show('party-view');
+    hide('loading');renderParty();el('party-view').style.display='flex';
   }catch(e){hide('loading');el('error-msg').style.display='block';el('error-msg').textContent='Could not connect to Neon. Check your config.';console.error(e);}
 }
 async function loadAll(){
@@ -615,6 +631,8 @@ function tcClass(t){return 'tc'+t;}
 function renderParty(){
   const grid=el('party-grid');grid.innerHTML='';
   el('header-char').style.display='none';el('header-level').style.display='none';
+  const subEl=el('roster-sub');
+  if(subEl){const withSP=characters.filter(c=>availPts(c.id)>0).length;subEl.textContent=`${characters.length} heirloom${characters.length===1?'':'s'}`+(withSP?` · ${withSP} awaiting awakening`:'');}
   for(const char of characters){
     const pts=availPts(char.id),taken=takenCount(char.id),hasPoints=pts>0;
     const maxPips=Math.min(char.points,10);
@@ -631,7 +649,7 @@ function renderParty(){
 function switchPartyTab(which){
   el('tab-party').classList.toggle('active', which==='party');
   el('tab-dm').classList.toggle('active', which==='dm');
-  el('party-tab-content').style.display = which==='party' ? 'block' : 'none';
+  el('party-tab-content').style.display = which==='party' ? 'flex' : 'none';
   el('dm-tab-content').style.display    = which==='dm'    ? 'block' : 'none';
   if(which==='dm'){
     // show PIN gate unless already unlocked this session
@@ -991,7 +1009,7 @@ function goToSpendWithSelection(uid){
 function goToParty(){
   renderParty();
   hide('char-view');hide('spend-view');
-  el('party-view').style.display='block';
+  el('party-view').style.display='flex';
   el('header-char').style.display='none';el('header-level').style.display='none';
   // always land on party tab
   switchPartyTab('party');
