@@ -338,6 +338,15 @@ body.has-bar main { padding-bottom: 140px; }
 .stepper input:focus { outline: none; background: var(--accent-soft); }
 .sp-readout { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 108px; }
 .sp-readout b { color: var(--text); font-weight: 600; }
+.sp-readout span { font-size: 12px; color: var(--text-faint); }
+.sp-readout .over-cap { color: var(--danger); }
+#confirm-replace { flex-shrink: 0; }
+.replace-pick { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
+.replace-pick .select { max-width: 220px; }
+@media (max-width: 640px) { .confirm-inner { flex-wrap: wrap; } #confirm-replace { order: 3; width: 100%; } .replace-pick .select { flex: 1; max-width: none; } }
+.rules { margin-top: 32px; }
+.rules-list { display: flex; flex-direction: column; gap: 10px; padding-left: 18px; color: var(--text-muted); max-width: 72ch; font-size: 15px; }
+.rules-list b { color: var(--text); font-weight: 600; }
 .admin-edit { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
 .add-card { padding: 22px; }
 .code-block { margin-top: 14px; padding: 14px 16px; background: var(--surface-2); border-radius: 10px; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all; }
@@ -446,6 +455,8 @@ body.has-bar main { padding-bottom: 140px; }
           <div class="chip-row">
             <span class="badge" id="char-type"></span>
             <span class="badge" id="char-level-chip"></span>
+            <span class="badge" id="char-rarity" title="Rarity from total SP"></span>
+            <span class="badge" id="char-limited" title="An heirloom can hold at most 2 limited awakenings"></span>
           </div>
           <div class="card sp-panel">
             <div class="sp-figure">
@@ -467,6 +478,23 @@ body.has-bar main { padding-bottom: 140px; }
       <div id="tree-panel" role="tabpanel" aria-labelledby="toggle-tree" hidden>
         <div id="tree-view"></div>
       </div>
+
+      <details class="disclosure rules">
+        <summary><svg class="icon"><use href="#i-right"/></svg>How awakenings work</summary>
+        <div class="card disclosure-body">
+          <ul class="rules-list">
+            <li><b>Tiers</b> unlock at character level 1, 5, 10 and 15.</li>
+            <li><b>Limited awakenings:</b> an heirloom holds at most 2. Taking a third means replacing one of them.</li>
+            <li><b>One of each name:</b> levels and subtypes count as the same name, so you can't have Duelist (level 1) and Duelist (level 2), or two Overpower types. Taking the higher one replaces the lower one.</li>
+            <li><b>Overwriting:</b> when a new awakening replaces an old one, the old one's cost counts toward the new one, so you only pay the difference. Each purchase can replace only one awakening.</li>
+            <li><b>Removing</b> awakenings outside an overwrite is refocusing the heirloom, which needs the DM's approval (usually a quest or a séance with the ancestors).</li>
+            <li><b>Earning SP:</b> the DM awards 1–5 SP for heroic deeds. Total SP shouldn't exceed character level + 2. When an heirloom earns its 20th SP, it gains 5 more.</li>
+            <li><b>Per short/long rest</b> abilities recharge when you finish that kind of rest.</li>
+            <li><b>Rarity</b> follows total SP: 0 common, 1–4 uncommon, 5–9 rare, 10–15 very rare, 16+ legendary.</li>
+            <li><b>Betraying the ancestors</b> can make the heirloom act as a mundane weapon until their respect is regained.</li>
+          </ul>
+        </div>
+      </details>
     </section>
 
     <!-- SPEND -->
@@ -566,6 +594,7 @@ body.has-bar main { padding-bottom: 140px; }
 <div class="confirm-bar" id="confirm-bar" hidden>
   <div class="wrap confirm-inner">
     <div class="confirm-info" id="confirm-selected"></div>
+    <div id="confirm-replace" hidden></div>
     <button class="btn btn-primary" id="confirm-btn" type="button" disabled onclick="confirmAwakening()">Awaken</button>
   </div>
 </div>
@@ -596,7 +625,7 @@ async function getAnonToken(){
 const TIERS=[{tier:1,label:'Tier I',minLevel:1},{tier:2,label:'Tier II',minLevel:5},{tier:3,label:'Tier III',minLevel:10},{tier:4,label:'Tier IV',minLevel:15}];
 let CATEGORIES=[];
 let db,ready=false,characters=[],upgrades=[],awakenings={};
-let activeChar=null,charTab='taken',spendTierFilter='all',spendCatFilter='all',spendSearch='',showLocked=false,selectedUpgradeId=null;
+let activeChar=null,charTab='taken',spendTierFilter='all',spendCatFilter='all',spendSearch='',showLocked=false,selectedUpgradeId=null,replaceChoice=null;
 let adminSession=false;
 
 async function init(){
@@ -633,7 +662,33 @@ function takenCount(id){return Object.values(charAw(id)).reduce((s,c)=>s+c,0);}
 function charLevel(id){const c=characters.find(x=>x.id===id);return c?c.level:1;}
 function tierInfo(t){return TIERS.find(x=>x.tier===t)||TIERS[0];}
 function tierUnlocked(cid,t){return charLevel(cid)>=tierInfo(t).minLevel;}
-function canTake(cid,u){if(!tierUnlocked(cid,u.tier))return false;if(hasTaken(cid,u.id))return false;if(availPts(cid)<u.cost)return false;return true;}
+const MAX_LIMITED=2;
+function rarity(points){return points>=16?'Legendary':points>=10?'Very rare':points>=5?'Rare':points>=1?'Uncommon':'Common';}
+function baseName(n){return n.replace(/\s*\(.*\)\s*$/,'').trim();}
+function ownedUps(cid){const aw=charAw(cid);return upgrades.filter(u=>(aw[u.id]||0)>0);}
+function limitedCount(cid){return ownedUps(cid).filter(u=>u.repeatable).length;}
+// Ancestral Weapons ch.1 rules: no two awakenings share a name (levels and subtypes
+// count as the same name), at most 2 limited awakenings, and a purchase may overwrite
+// one existing awakening, putting its cost toward the new one. We only allow
+// overwriting with an equal or pricier awakening so no SP is silently lost.
+function purchasePlan(cid,u,replaceId){
+  if(!tierUnlocked(cid,u.tier))return{ok:false,reason:'level'};
+  if(hasTaken(cid,u.id))return{ok:false,reason:'owned'};
+  const owned=ownedUps(cid);
+  let replace=owned.find(o=>baseName(o.name)===baseName(u.name))||null,choices=null;
+  if(replace){
+    if(replace.cost>u.cost)return{ok:false,reason:'downgrade',replace};
+    if(u.repeatable&&!replace.repeatable&&limitedCount(cid)>=MAX_LIMITED)return{ok:false,reason:'limited'};
+  }else if(u.repeatable&&limitedCount(cid)>=MAX_LIMITED){
+    choices=owned.filter(o=>o.repeatable&&o.cost<=u.cost);
+    if(!choices.length)return{ok:false,reason:'limited'};
+    replace=choices.find(o=>o.id===replaceId)||choices.reduce((a,b)=>b.cost>a.cost?b:a);
+  }
+  const net=u.cost-(replace?replace.cost:0);
+  const ok=availPts(cid)>=net;
+  return{ok,reason:ok?null:'sp',replace,choices,net};
+}
+function canTake(cid,u){return purchasePlan(cid,u).ok;}
 function formatEffect(t){return esc(t).replace(/(\d+d\d+|\b\d+(?=\s*(?:ft|feet|HP|hit points|SP|minutes?|hours?|days?|rounds?)))/g,'<em>$1</em>');}
 function portraitHtml(c){return c.image_url?`<img src="${esc(c.image_url)}" alt="Portrait of ${esc(c.name)}" loading="lazy">`:`<span class="portrait-fallback" aria-hidden="true">${initial(c.name)}</span>`;}
 function charHref(id,...rest){return '#/c/'+[id,...rest].map(encodeURIComponent).join('/');}
@@ -712,6 +767,8 @@ function renderCharHeader(){
   cancelHeirloomRename();
   el('char-type').textContent=char.heirloom_type;
   el('char-level-chip').textContent=`Level ${char.level}`;
+  el('char-rarity').textContent=rarity(char.points);
+  el('char-limited').textContent=`Limited ${limitedCount(activeChar)} of ${MAX_LIMITED}`;
   el('char-pts-num').textContent=pts;
   el('char-pts-num').classList.toggle('has',pts>0);
   const btn=el('awaken-btn');
@@ -794,7 +851,7 @@ function renderTree(){
 function treeCardHtml(u,char){
   const taken=hasTaken(activeChar,u.id);
   const levelOk=char&&char.level>=tierInfo(u.tier).minLevel;
-  const canSelect=levelOk&&!taken&&availPts(activeChar)>=u.cost;
+  const canSelect=levelOk&&canTake(activeChar,u);
   const tag=canSelect?'button':'div';
   const attrs=canSelect?` type="button" onclick="location.hash='${charHref(activeChar,'spend',u.id)}'" title="Select this awakening"`:'';
   const cls='tree-card'+(taken?' taken':'');
@@ -829,7 +886,7 @@ async function saveHeirloomName(){
 /* ── SPEND ── */
 function showSpend(preselect){
   const char=characters.find(c=>c.id===activeChar);
-  spendTierFilter='all';spendCatFilter='all';spendSearch='';showLocked=false;
+  spendTierFilter='all';spendCatFilter='all';spendSearch='';showLocked=false;replaceChoice=null;
   selectedUpgradeId=preselect&&upgrades.some(u=>u.id===preselect)?preselect:null;
   el('spend-search').value='';
   el('spend-back').href=charHref(activeChar);
@@ -877,36 +934,49 @@ function renderSpendGrid(){
   const display=showLocked?all:available;
   const lockBtn=el('toggle-locked-btn');
   lockBtn.hidden=!locked.length;
-  lockBtn.textContent=showLocked?`Hide ${locked.length} too expensive`:`Show ${locked.length} too expensive`;
-  el('spend-results-count').textContent=`${available.length} available`;
+  lockBtn.textContent=showLocked?`Hide ${locked.length} unavailable`:`Show ${locked.length} unavailable`;
+  el('spend-results-count').textContent=`${available.length} available · limited ${limitedCount(activeChar)} of ${MAX_LIMITED}`;
   if(!display.length){
     grid.innerHTML='';show('no-results');
-    el('no-results').textContent=available.length===0&&!showLocked&&locked.length?'Nothing affordable matches. Show the too-expensive options to browse them.':'No awakenings match your filters.';
+    el('no-results').textContent=available.length===0&&!showLocked&&locked.length?'Nothing available matches. Show the unavailable options to see why.':'No awakenings match your filters.';
     return;
   }
   grid.innerHTML=display.map(u=>{
-    const isLocked=!canTake(activeChar,u),isSelected=u.id===selectedUpgradeId;
+    const plan=purchasePlan(activeChar,u),isLocked=!plan.ok,isSelected=u.id===selectedUpgradeId;
+    let note='';
+    if(plan.reason==='downgrade')note=`<span class="badge badge-danger">Has ${esc(plan.replace.name)}</span>`;
+    else if(plan.reason==='limited')note=`<span class="badge badge-danger">Limited slots full</span>`;
+    else if(plan.reason==='sp')note=`<span class="badge badge-danger">Needs ${plan.net} SP</span>`;
+    if(plan.replace&&plan.reason!=='downgrade')note+=`<span class="badge badge-accent">${plan.choices?'Replaces a limited':'Replaces '+esc(plan.replace.name)} · ${plan.net} SP net</span>`;
     return `<button class="opt t${u.tier}" type="button" role="radio" aria-checked="${isSelected}"${isLocked?' disabled':''} onclick="selectUpgrade('${esc(u.id)}')">
       <span class="opt-check">${icon('check')}</span>
       <div class="opt-head"><span class="opt-name">${esc(u.name)}</span><span class="opt-cost"><b>${u.cost}</b><span>SP</span></span></div>
-      <div class="tree-badges"><span class="badge"><span class="tier-dot"></span>${tierInfo(u.tier).label}</span>${u.repeatable?'<span class="badge">Limited</span>':''}${u.requirements_note?`<span class="badge">${esc(u.requirements_note)}</span>`:''}${isLocked?`<span class="badge badge-danger">Needs ${u.cost} SP</span>`:''}</div>
+      <div class="tree-badges"><span class="badge"><span class="tier-dot"></span>${tierInfo(u.tier).label}</span>${u.repeatable?'<span class="badge">Limited</span>':''}${u.requirements_note?`<span class="badge">${esc(u.requirements_note)}</span>`:''}${note}</div>
       <div class="opt-effect">${formatEffect(u.effect)}</div>
     </button>`;
   }).join('');
 }
 
-function selectUpgrade(uid){selectedUpgradeId=uid===selectedUpgradeId?null:uid;renderSpendGrid();updateConfirmBar();}
+function selectUpgrade(uid){selectedUpgradeId=uid===selectedUpgradeId?null:uid;replaceChoice=null;renderSpendGrid();updateConfirmBar();}
 
 function updateConfirmBar(){
-  const sel=el('confirm-selected'),btn=el('confirm-btn');
+  const sel=el('confirm-selected'),btn=el('confirm-btn'),rep=el('confirm-replace');
   const u=selectedUpgradeId&&upgrades.find(x=>x.id===selectedUpgradeId);
-  if(!u||!canTake(activeChar,u)){
+  const plan=u&&purchasePlan(activeChar,u,replaceChoice);
+  rep.innerHTML='';rep.hidden=true;
+  if(!u||(!plan.ok&&!plan.choices)){
     sel.innerHTML=`<div class="confirm-name muted" style="font-weight:500">Nothing selected</div><div class="confirm-sub">Pick an awakening above.</div>`;
     btn.disabled=true;btn.textContent='Awaken';return;
   }
-  const left=availPts(activeChar)-u.cost;
-  sel.innerHTML=`<div class="confirm-name">${esc(u.name)}</div><div class="confirm-sub">${u.cost} SP · ${left} SP left after</div>`;
-  btn.disabled=false;btn.textContent=`Awaken · ${u.cost} SP`;
+  if(plan.choices){
+    rep.hidden=false;
+    rep.innerHTML=`<label class="replace-pick"><span>Replaces</span><select class="select" aria-label="Limited awakening to replace" onchange="replaceChoice=this.value;updateConfirmBar()">${plan.choices.map(o=>`<option value="${esc(o.id)}"${o.id===plan.replace.id?' selected':''}>${esc(o.name)} (${o.cost} SP)</option>`).join('')}</select></label>`;
+  }
+  const parts=[];
+  if(plan.replace&&!plan.choices)parts.push(`Replaces ${esc(plan.replace.name)}`);
+  parts.push(plan.ok?`${plan.net} SP · ${availPts(activeChar)-plan.net} SP left after`:`Needs ${plan.net} SP`);
+  sel.innerHTML=`<div class="confirm-name">${esc(u.name)}</div><div class="confirm-sub">${parts.join(' · ')}</div>`;
+  btn.disabled=!plan.ok;btn.textContent=`Awaken · ${plan.net} SP`;
 }
 
 function onSearch(){spendSearch=el('spend-search').value;selectedUpgradeId=null;renderSpendGrid();updateConfirmBar();}
@@ -914,13 +984,20 @@ function toggleShowLocked(){showLocked=!showLocked;renderSpendGrid();updateConfi
 
 async function confirmAwakening(){
   if(!activeChar||!selectedUpgradeId)return;
-  const u=upgrades.find(x=>x.id===selectedUpgradeId);if(!u||!canTake(activeChar,u))return;
+  const u=upgrades.find(x=>x.id===selectedUpgradeId);if(!u)return;
+  const plan=purchasePlan(activeChar,u,replaceChoice);if(!plan.ok)return;
   const btn=el('confirm-btn');btn.disabled=true;btn.textContent='Awakening…';
+  // Insert first so a failure leaves the character untouched; then drop the overwritten one.
   const{error}=await db.from('ha_character_awakenings').insert({character_id:activeChar,upgrade_id:u.id,count:1});
   if(error){showToast("Couldn't save that. Try again.");updateConfirmBar();return;}
   if(!awakenings[activeChar])awakenings[activeChar]={};
   awakenings[activeChar][u.id]=(awakenings[activeChar][u.id]||0)+1;
-  showToast(`${u.name} awakened`);selectedUpgradeId=null;
+  if(plan.replace){
+    const{error:dErr}=await db.from('ha_character_awakenings').delete().eq('character_id',activeChar).eq('upgrade_id',plan.replace.id);
+    if(dErr){showToast(`${u.name} awakened, but ${plan.replace.name} couldn't be removed. Remove it on the character page.`);}
+    else{delete awakenings[activeChar][plan.replace.id];showToast(`${u.name} awakened · replaced ${plan.replace.name}`);}
+  }else showToast(`${u.name} awakened`);
+  selectedUpgradeId=null;replaceChoice=null;
   if(availPts(activeChar)<=0){charTab='taken';setTimeout(()=>{location.hash=charHref(activeChar);},700);updateConfirmBar();return;}
   updateSpendLede();renderSpendGrid();updateConfirmBar();
 }
@@ -1017,7 +1094,10 @@ function renderDmPanel(){
     </article>`;
   }).join('');
 }
-function spReadout(char){return `<b>${availPts(char.id)}</b> free / ${char.points} total`;}
+function spReadout(char){
+  const cap=char.level+2,over=char.points>cap;
+  return `<b>${availPts(char.id)}</b> free / ${char.points} total<br><span class="${over?'over-cap':''}" title="Ancestral Weapons: total SP shouldn't exceed level + 2">${over?'Over':'Cap'} ${cap} (level + 2)</span>`;
+}
 function toggleEdit(id){const f=el(`admin-edit-${id}`);f.hidden=!f.hidden;if(!f.hidden)el(`ed-name-${id}`).focus();}
 
 async function saveCharDetails(charId){
@@ -1046,6 +1126,7 @@ async function dmAdjustLevel(charId, delta){
   if(error){showToast("Couldn't save the level. Try again.");return;}
   char.level=newLevel;
   el(`dm-lv-${charId}`).textContent=newLevel;
+  el(`dm-sp-${charId}`).innerHTML=spReadout(char);
   showToast(`${char.name} is now level ${newLevel}`);
 }
 
@@ -1054,13 +1135,16 @@ async function dmAwardSP(charId, sign){
   const amount=parseInt(el(`dm-spinput-${charId}`).value)||1;
   if(amount<=0) return;
   const delta=sign*amount;
-  const newPoints=Math.max(0,char.points+delta);
+  let newPoints=Math.max(0,char.points+delta);
+  // Ancestral Weapons: the heirloom's 20th SP unlocks 5 bonus SP.
+  const bonus=char.points<20&&newPoints>=20?5:0;
+  newPoints+=bonus;
   if(newPoints===char.points) return;
   const{error}=await db.from('ha_characters').update({points:newPoints}).eq('id',charId);
   if(error){showToast("Couldn't save SP. Try again.");return;}
   char.points=newPoints;
   el(`dm-sp-${charId}`).innerHTML=spReadout(char);
-  showToast(`${char.name}: ${delta>0?'+':''}${delta} SP`);
+  showToast(`${char.name}: ${delta>0?'+':''}${delta} SP${bonus?' · reached 20, +5 bonus SP':''}${newPoints>char.level+2?' · over the level + 2 cap':''}`);
 }
 
 function prepAddForm(){if(!el('new-char-sort').value)el('new-char-sort').value=characters.length+1;}
