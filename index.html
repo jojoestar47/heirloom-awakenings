@@ -229,7 +229,14 @@ body.has-bar .toast { bottom: 104px; }
 .aw-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .aw-name { font-weight: 600; font-size: 16px; }
 .aw-effect { grid-column: 1 / -1; color: var(--text-muted); max-width: 70ch; font-size: 15px; line-height: 1.6; }
-.aw-effect em, .opt-effect em, .tree-effect em { font-style: normal; font-weight: 600; color: var(--text); }
+.aw-effect em, .opt-effect em, .tree-effect em,
+.aw-effect b, .opt-effect b, .tree-effect b { font-style: normal; font-weight: 600; color: var(--text); }
+.aw-effect p + p, .opt-effect p + p, .tree-effect p + p { margin-top: 6px; }
+.aw-effect ul, .opt-effect ul, .tree-effect ul { margin: 6px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.aw-effect ul:first-child, .opt-effect ul:first-child, .tree-effect ul:first-child { margin-top: 0; }
+.aw-effect li::marker, .opt-effect li::marker, .tree-effect li::marker { color: var(--text-faint); }
+.use-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.use-tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--border-strong); font-size: 12.5px; font-weight: 500; color: var(--text-muted); white-space: nowrap; }
 .aw-actions { display: flex; align-items: center; gap: 8px; justify-self: end; }
 @media (max-width: 520px) { .aw-item { padding: 16px; } }
 
@@ -491,7 +498,8 @@ body.has-bar main { padding-bottom: 140px; }
             <li><b>Earning SP:</b> the DM awards 1–5 SP for heroic deeds. Total SP shouldn't exceed character level + 2. When an heirloom earns its 20th SP, it gains 5 more.</li>
             <li><b>Per short/long rest</b> abilities recharge when you finish that kind of rest.</li>
             <li><b>Rarity</b> follows total SP: 0 common, 1–4 uncommon, 5–9 rare, 10–15 very rare, 16+ legendary.</li>
-            <li><b>Betraying the ancestors</b> can make the heirloom act as a mundane weapon until their respect is regained.</li>
+            <li><b>Not just weapons:</b> an heirloom can be any treasured item. When an awakening mentions attacking or hitting with your heirloom, it means the attacks you make while you carry it.</li>
+            <li><b>Betraying the ancestors</b> can make the heirloom lose its powers until their respect is regained.</li>
           </ul>
         </div>
       </details>
@@ -689,7 +697,19 @@ function purchasePlan(cid,u,replaceId){
   return{ok,reason:ok?null:'sp',replace,choices,net};
 }
 function canTake(cid,u){return purchasePlan(cid,u).ok;}
-function formatEffect(t){return esc(t).replace(/(\d+d\d+|\b\d+(?=\s*(?:ft|feet|HP|hit points|SP|minutes?|hours?|days?|rounds?)))/g,'<em>$1</em>');}
+// Effects are written as short lines: "- " starts a bullet, **text** is bold.
+// Older plain-text effects (no **) fall back to auto-highlighting dice and distances.
+function formatEffect(t){
+  const inline=s=>{const h=esc(s);return t.includes('**')?h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'):h.replace(/(\d+d\d+|\b\d+(?=\s*(?:ft|feet|HP|hit points|SP|minutes?|hours?|days?|rounds?)))/g,'<em>$1</em>');};
+  let html='',list=[];
+  const flush=()=>{if(list.length){html+=`<ul>${list.map(li=>`<li>${li}</li>`).join('')}</ul>`;list=[];}};
+  for(const line of String(t||'').split('\n').map(l=>l.trim()).filter(Boolean)){
+    if(line.startsWith('- '))list.push(inline(line.slice(2)));
+    else{flush();html+=`<p>${inline(line)}</p>`;}
+  }
+  flush();return html;
+}
+function useTagsHtml(u){return (u.tags&&u.tags.length)?`<div class="use-tags">${u.tags.map(t=>`<span class="use-tag">${esc(t)}</span>`).join('')}</div>`:'';}
 function portraitHtml(c){return c.image_url?`<img src="${esc(c.image_url)}" alt="Portrait of ${esc(c.name)}" loading="lazy">`:`<span class="portrait-fallback" aria-hidden="true">${initial(c.name)}</span>`;}
 function charHref(id,...rest){return '#/c/'+[id,...rest].map(encodeURIComponent).join('/');}
 
@@ -799,7 +819,7 @@ function renderTaken(){
     <article class="card aw-item t${u.tier}" id="taken-${esc(u.id)}">
       <div class="aw-head"><span class="aw-name">${esc(u.name)}</span><span class="badge"><span class="tier-dot"></span>${tierInfo(u.tier).label}</span></div>
       <div class="aw-actions" id="actions-${esc(u.id)}">${removeBtnHtml(u)}</div>
-      <p class="aw-effect">${formatEffect(u.effect)}</p>
+      <div class="aw-effect">${useTagsHtml(u)}${formatEffect(u.effect)}</div>
     </article>`).join('');
 }
 function removeBtnHtml(u){return `<button class="text-btn danger" type="button" onclick="promptRemove('${esc(u.id)}')" title="Refunds ${u.cost} SP">Remove</button>`;}
@@ -858,7 +878,7 @@ function treeCardHtml(u,char){
   return `<${tag} class="${cls}"${attrs}>
     <div class="tree-card-head"><span class="tree-name">${esc(u.name)}</span><span class="tree-cost">${u.cost} SP</span></div>
     ${(taken||u.repeatable||u.requirements_note)?`<div class="tree-badges">${taken?`<span class="badge badge-success">${icon('check','style="width:13px;height:13px"')}Attuned</span>`:''}${u.repeatable?'<span class="badge">Limited</span>':''}${u.requirements_note?`<span class="badge">${esc(u.requirements_note)}</span>`:''}</div>`:''}
-    <div class="tree-effect">${formatEffect(u.effect)}</div>
+    <div class="tree-effect">${useTagsHtml(u)}${formatEffect(u.effect)}</div>
   </${tag}>`;
 }
 
@@ -921,7 +941,7 @@ function getFilteredUpgrades(){
     if(!char||char.level<tierInfo(u.tier).minLevel)return false;
     if(hasTaken(activeChar,u.id))return false;
     if(spendCatFilter!=='all'){if(!u.requirements_note||u.requirements_note!==spendCatFilter)return false;}
-    if(search){const hay=(u.name+' '+u.effect+(u.requirements_note||'')).toLowerCase();if(!hay.includes(search))return false;}
+    if(search){const hay=[u.name,u.effect.replace(/\*\*/g,''),u.requirements_note||'',...(u.tags||[])].join(' ').toLowerCase();if(!hay.includes(search))return false;}
     return true;
   });
 }
@@ -952,7 +972,7 @@ function renderSpendGrid(){
       <span class="opt-check">${icon('check')}</span>
       <div class="opt-head"><span class="opt-name">${esc(u.name)}</span><span class="opt-cost"><b>${u.cost}</b><span>SP</span></span></div>
       <div class="tree-badges"><span class="badge"><span class="tier-dot"></span>${tierInfo(u.tier).label}</span>${u.repeatable?'<span class="badge">Limited</span>':''}${u.requirements_note?`<span class="badge">${esc(u.requirements_note)}</span>`:''}${note}</div>
-      <div class="opt-effect">${formatEffect(u.effect)}</div>
+      <div class="opt-effect">${useTagsHtml(u)}${formatEffect(u.effect)}</div>
     </button>`;
   }).join('');
 }
