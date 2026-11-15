@@ -131,6 +131,6 @@
   {"id":"spectral_reach_t4","tags":["Bonus action","1 minute","Short or long rest"],"effect":"For 1 minute:\n- This heirloom's reach increases by **5 ft**\n- Hits with it deal **+1d4** damage"},
   {"id":"venomous_t4","tags":["Passive"],"effect":"A creature you damage with this heirloom makes a **DC 15 Constitution** save.\n- Fail: it takes **2d6 poison** damage at the start of each of its turns for 1 minute.\n- Success: it's immune to this effect for 24 hours."},
   {"id":"vicious_level_2_t4","tags":["Passive"],"effect":"Critical hits on a natural 20 with this heirloom deal **+4d6** damage of the same type."},
-  {"id":"whirlwind_t4","tags":["Action"],"effect":"Make a **melee attack** against every creature within 5 ft of you."},
+  {"id":"whirlwind_t4","tags":["Action"],"effect":"Make a **melee or ranged attack** against every creature within 5 ft of you."},
   {"id":"will_level_2_t4","tags":["Long rest"],"effect":"When you fail a **concentration** save, you can succeed instead."}
 ]
