@@ -218,7 +218,7 @@ from (values
 - Fail: it takes **2d6 poison** damage at the start of each of its turns for 1 minute.
 - Success: it''s immune to this effect for 24 hours.'),
   ('vicious_level_2_t4', array['Passive']::text[], 'Critical hits on a natural 20 with this heirloom deal **+4d6** damage of the same type.'),
-  ('whirlwind_t4', array['Action']::text[], 'Make a **melee attack** against every creature within 5 ft of you.'),
+  ('whirlwind_t4', array['Action']::text[], 'Make a **melee or ranged attack** against every creature within 5 ft of you.'),
   ('will_level_2_t4', array['Long rest']::text[], 'When you fail a **concentration** save, you can succeed instead.')
 ) as v(id, tags, effect)
 where u.id = v.id;
